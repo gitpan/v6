@@ -42,7 +42,7 @@ my $rx_end_no_blocks = qr/
 # this is not thread-safe, but it saves time in Parse::Yapp 
 # XXX - this optimization is no longer needed, as the optimization in Grammar::Operator worked best
 our ( $p, $match, $pos, $rx_end, $allow_modifier, $statement_modifier,
-    $allow_semicolon );
+    $allow_semicolon, $allow_comma );
 # our ( $reentrant, $last_reentrant ) = (0,0);
 
 sub parse {
@@ -63,7 +63,7 @@ sub parse {
 
 sub ast {
     local ( $p, $match, $pos, $rx_end, $allow_modifier, $statement_modifier,
-        $allow_semicolon );
+        $allow_semicolon, $allow_comma );
     #    if $reentrant && $reentrant >= $last_reentrant;
     # $last_reentrant = $reentrant;
     # $reentrant++;
@@ -78,6 +78,7 @@ sub ast {
     my $no_blocks    = exists $param->{args}{no_blocks}       ? 1 : 0;
     $allow_modifier  = exists $param->{args}{allow_modifier}  ? 1 : 0;
     $allow_semicolon = exists $param->{args}{allow_semicolon} ? 1 : 0;
+    $allow_comma     = exists $param->{args}{no_comma}        ? 0 : 1;
     #print "don't parse blocks: $no_blocks ";
     #print "allow modifier: $allow_modifier \n";
     $rx_end = $no_blocks 
@@ -89,6 +90,9 @@ sub ast {
     if  (  substr( $match, $pos ) =~ /$rx_end/ 
         || (  !$allow_semicolon
            && substr( $match, $pos ) =~ /^\s* ; /xs
+           )
+        || (  !$allow_comma
+           && substr( $match, $pos ) =~ /^\s* , /xs
            )
         ) {
         # end of parse
@@ -134,6 +138,9 @@ sub lexer {
         if ( substr( $match, $pos ) =~ /$rx_end/  
            || (  !$allow_semicolon
               && substr( $match, $pos ) =~ /^\s* ; /xs
+              )
+           || (  !$allow_comma
+              && substr( $match, $pos ) =~ /^\s* , /xs
               )
            ) {
             #warn "end of expression at: [",substr($match,0,10),"]";
@@ -201,7 +208,7 @@ sub lexer {
             $m2 = Pugs::Grammar::Quote->parse( $match, { p => $pos } )
                 unless $m2;
         }
-        #print "Lexer: m1 = " . Dumper($m1) . "m2 = " . Dumper($m2);
+        # print "Lexer: m1 = " . Dumper($m1) . "m2 = " . Dumper($m2);
 
         my $pos2;
         while(1) {
@@ -219,6 +226,42 @@ sub lexer {
                 $m2 = $meth;
                 next;
             }
+            
+            # term.>>meth: list  # TODO 
+            # term( invocant : list )   # TODO - arity({ $^a,$^b }:)
+            
+            # term.meth: list  
+            if ( $m2 && $m2->tail && $m2->tail =~ /^\:(?!=)/ ) {
+                my $paren = Pugs::Grammar::Expression->parse( $match, { p => $pos2 + 1 } );
+                #print "paren: ",Dumper($paren);
+                if ( exists $m2->()->{dot_bareword} ) {
+                    $paren->data->{capture} = \{ 
+                        op1 => 'method_call', 
+                        self => { 'scalar' => '$_' }, 
+                        method => $m2->(), 
+                        param => $paren->(), 
+                    };
+                }
+                elsif ( exists $m2->()->{op1} 
+                     && $m2->()->{op1} eq 'method_call'
+                     && ! defined $m2->()->{param} 
+                ) {
+                    $paren->data->{capture} = \{ 
+                        %{$m2->()}, 
+                        param => $paren->(), 
+                    };
+                }
+                else {
+                    $paren->data->{capture} = \{ 
+                        op1 => 'call', 
+                        sub => $m2->(), 
+                        param => $paren->(), 
+                    };
+                }
+                $m2 = $paren;
+                next;
+            }
+
             # term.meth() 
             if ( $m2 && $m2->tail && $m2->tail =~ /^\.[^.([{<«]/ ) {
                 my $meth = Pugs::Grammar::Term->parse( $match, { p => $pos2 } );
@@ -237,9 +280,25 @@ sub lexer {
             }
             # term() 
             if ( $m2 && $m2->tail && $m2->tail =~ /^\.?\(/ ) {
+                #print "PAREN\n";
                 my $paren = Pugs::Grammar::Term->parse( $match, { p => $pos2 } );
                 #print "paren: ",Dumper($paren);
-                if ( exists $m2->()->{dot_bareword} ) {
+                if ( exists $paren->()->{self} ) {
+                    #print "SELF\n";
+                    my %param = %{$paren->()};
+                    #print "paren: ",Dumper(\%param);
+                    my $self = delete $param{self};
+                    my $method = $m2->();
+                    $method = { dot_bareword => $method->{bareword} }
+                        if exists $method->{bareword};
+                    $paren->data->{capture} = \{ 
+                        op1 => 'method_call', 
+                        self => $self, 
+                        method => $method, 
+                        param => {%param}, 
+                    };
+                }
+                elsif ( exists $m2->()->{dot_bareword} ) {
                     $paren->data->{capture} = \{ 
                         op1 => 'method_call', 
                         self => { 'scalar' => '$_' }, 
@@ -302,7 +361,17 @@ sub lexer {
             # term{} 
             if ( $m2 && $m2->tail && $m2->tail =~ /^\.?\{/ ) {
                 my $paren = Pugs::Grammar::Term->parse( $match, { p => $pos2 } );
-                if ( exists $m2->()->{dot_bareword} ) {
+                if (  exists $paren->()->{anon_hash} 
+                   && exists $paren->()->{anon_hash}{null}
+                   ) {
+                    # %var{}
+                    $paren->data->{capture} = \{ 
+                        exp1   => $m2->(), 
+                        fixity => 'prefix', 
+                        op1    => '%',
+                    };
+                }
+                elsif ( exists $m2->()->{dot_bareword} ) {
                     $paren->data->{capture} = \{ 
                         op1 => 'method_call', 
                         self => { 'scalar' => '$_' }, 

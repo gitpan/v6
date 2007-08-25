@@ -91,7 +91,7 @@ sub unlike (Str $got, Rule $expected, Str $desc?, :$todo, :$depends) returns Boo
 sub eval_dies_ok (Str $code, Str $desc?, :$todo, :$depends) returns Bool is export {
     eval $code;
     if (defined $!) {
-        &Test::ok.goto(1, $desc, :$todo);
+        &Test::ok.nextwith(1, $desc, :$todo);
     }
     else {
         Test::proclaim(undef, $desc, $todo, "No exception thrown", :$depends);
@@ -121,23 +121,23 @@ sub use_ok (Str $module, :$todo, :$depends) is export {
     eval "package $caller; require $module";
 
     #try {
-    #    &::($module)::import.goto();
+    #    &::($module)::import.nextwith();
     #};
 
     if ($!) {
         Test::proclaim(undef, "require $module;", $todo, "Import error when loading $module: $!", :$depends);
     }
     else {
-        &Test::ok.goto(1, "$module imported OK", :$todo, :$depends);
+        &Test::ok.nextwith(1, "$module imported OK", :$todo, :$depends);
     }
 }
 
 ## throws ok
 
 sub throws_ok (Code &code, Any $match, Str $desc?, :$todo, :$depends) returns Bool is export {
-    try { code() };
+    try &code;
     if ($!) {
-        &Test::ok.goto($! ~~ $match, $desc, :$todo, :$depends);
+        &Test::ok.nextwith($! ~~ $match, $desc, :$todo, :$depends);
     }
     else {
         Test::proclaim(undef, $desc, $todo, "No exception thrown", :$depends);
@@ -147,9 +147,9 @@ sub throws_ok (Code &code, Any $match, Str $desc?, :$todo, :$depends) returns Bo
 ## dies_ok
 
 sub dies_ok (Code &code, Str $desc?, :$todo, :$depends) returns Bool is export {
-    try { code() };
+    try &code;
     if ($!) {
-        &Test::ok.goto(1, $desc, :$todo);
+        &Test::ok.nextwith(1, $desc, :$todo);
     }
     else {
         Test::proclaim(undef, $desc, $todo, "No exception thrown", :$depends);
@@ -159,12 +159,12 @@ sub dies_ok (Code &code, Str $desc?, :$todo, :$depends) returns Bool is export {
 ## lives ok
 
 sub lives_ok (Code &code, Str $desc?, :$todo, :$depends) returns Bool is export {
-    try { code() };
+    try &code;
     if ($!) {
         Test::proclaim(undef, $desc, $todo, "An exception was thrown : $!", :$depends);
     }
     else {
-        &Test::ok.goto(1, $desc, :$todo, :$depends);
+        &Test::ok.nextwith(1, $desc, :$todo, :$depends);
     }
 }
 
@@ -301,8 +301,19 @@ sub report_failure (Str $todo?, Str $got?, Str $expected?, Bool $negate?) return
 
 
 sub test_ends {
+    #XXX this fixes an extremely strange bug
+    # my $nr = $Test::num_of_tests_run;        #AAA
     return() unless $Test::testing_started;
-    if (!defined($Test::num_of_tests_planned)) {
+    if (!defined($Test::num_of_tests_run)) {   #BBB
+    # if (!defined($Test::num_of_tests_run)) returned true when running t/operators/precedence.t
+    # even though $Test::num_of_tests_run was defined and equal to 49 at the top of this sub
+    # the bug only occurs when Test.pm is precompiled
+    # for the full story see the IRC conversation beginning at
+    # http://moritz.faui2k3.org/irclog/out.pl?channel=perl6;date=2007-05-14#id_l267
+    # r16289 of this file is the one that was being tested.
+    # my fix was to comment the line marked BBB and uncomment the lines marked AAA
+    # -rhr
+    # if (!defined($nr)) {                    #AAA
         say("1..$Test::num_of_tests_run");
     }
     elsif ($Test::num_of_tests_planned != $Test::num_of_tests_run) {

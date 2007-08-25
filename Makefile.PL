@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+
 my @inc;
 BEGIN {
     @inc = (-e '../../inc' and -e '../../VICTUALS')
@@ -11,7 +12,7 @@ BEGIN {
         : ()
 }
 use lib '../..', (@inc ? $inc[-1] : ());
-use inc::Module::Install @inc;
+use inc::Module::Install (@inc, '.');
 use File::Spec;
 
     name('v6');
@@ -22,7 +23,7 @@ requires('Module::Compile'      => '0.20');
 requires('Scalar::Util'         => '0');
 requires('Devel::Caller'        => '0.10');
 requires('Data::Bind'           => '0.28');
-requires('Sub::Multi'           => '0');
+requires('Sub::Multi'           => '0.003');
 requires('Moose'                => '0.10');
 #requires('Pugs::Emitter::Perl6::Perl5' => '0');
 #requires('Lexical::Alias'       => '0');

@@ -33,14 +33,18 @@ package v6::AST;
                  ;
 
 $INC{"v6/AST.pm"}=1;;
+ # use v6
+;
  sub node {
    my %_V6_PAD;
   my ($match,$type);
   Data::Bind->arg_bind(\@_);
   ;
- 
+ @_ = map { ref $_ eq "SCALAR" ? $$_ : $_ } @{$_[0]};  
     $type->create( $match )
         if ref $match;;
+ # use v6
+;
 
  };
 ## Signature for node
@@ -66,5 +70,7 @@ sub str {
     my $s = ${$_[0]};  
     return $s;
 };
+ # use v6
+;
 
 ; 1;

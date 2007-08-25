@@ -129,6 +129,8 @@ push @EXPORT, 'exit'; sub exit {
   Data::Bind->arg_bind(\@_);
   ;
  CORE::exit($status);;
+ # use v6
+;
 
  };
 ## Signature for exit
@@ -141,6 +143,8 @@ push @EXPORT, 'sleep'; sub sleep {
   Data::Bind->arg_bind(\@_);
   ;
  CORE::sleep($seconds);;
+ # use v6
+;
 
  };
 ## Signature for sleep
@@ -153,6 +157,8 @@ push @EXPORT, 'sleep'; sub sleep {
   Data::Bind->arg_bind(\@_);
   ;
  my $fh = IO::File->new; $fh->open($file); $fh;;
+ # use v6
+;
 
  };
 ## Signature for open

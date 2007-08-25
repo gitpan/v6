@@ -1,4 +1,4 @@
-﻿package Pugs::Grammar::Infix;
+package Pugs::Grammar::Infix;
 use strict;
 use warnings;
 use Pugs::Grammar::Operator;
@@ -21,10 +21,10 @@ sub add_rule {
     );
     $self->SUPER::add_rule( 
         $opt{name}, 
-        '{ return { op => "' . $opt{name} . '" ,} }' );
+        '{ return { op => \'' . $opt{name} . '\' ,} }' );
     $self->SUPER::add_rule( 
         "infix:<" . $opt{name} . ">",
-        '{ return { op => "infix:<' . $opt{name} . '>" ,} }' );
+        '{ return { op => \'infix:<' . $opt{name} . '>\' ,} }' );
 }
 
 sub add_same_precedence_ops {
@@ -113,35 +113,23 @@ BEGIN {
 
 
     __PACKAGE__->add_rule( 
-        name => 'Y',
+        name => 'Z',
         assoc => 'list',
         precedence => 'looser',
         other => '=',
     );
     __PACKAGE__->add_rule( 
-        name => '¥',
-        assoc => 'list',
-        precedence => 'equal',
-        other => 'Y',
-    );
-    __PACKAGE__->add_rule( 
         name => ',',
         assoc => 'list',
         precedence => 'equal',
-        other => 'Y',
-    );
-    __PACKAGE__->add_rule( 
-        name => ';',
-        assoc => 'list',
-        precedence => 'equal',
-        other => 'Y',
+        other => 'Z',
     );
     
     __PACKAGE__->add_rule( 
         name => 'and',
         assoc => 'left',
         precedence => 'looser',
-        other => 'Y',
+        other => 'Z',
     );
     
     __PACKAGE__->add_rule( 
@@ -163,6 +151,12 @@ BEGIN {
         other => 'or',
     );
 
+    __PACKAGE__->add_rule( 
+        name => ';',
+        assoc => 'list',
+        precedence => 'looser',
+        other => 'or',
+    );
     __PACKAGE__->recompile;
 }
 
