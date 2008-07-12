@@ -711,7 +711,7 @@ sub default {
                 return " (defined $param )";
             }
 
-            if ($subname eq 'substr' || $subname eq 'split' || $subname eq 'die' || $subname eq 'return' || $subname eq 'push' || $subname eq 'shift' || $subname eq 'join' || $subname eq 'index' || $subname eq 'undef' || $subname eq 'rand' || $subname eq 'int' || $subname eq 'splice' || $subname eq 'keys' || $subname eq 'values' || $subname eq 'sort' || $subname eq 'chomp' || $subname eq 'lc') {
+            if ($subname eq 'substr' || $subname eq 'split' || $subname eq 'die' || $subname eq 'return' || $subname eq 'push' || $subname eq 'shift' || $subname eq 'join' || $subname eq 'index' || $subname eq 'undef' || $subname eq 'rand' || $subname eq 'int' || $subname eq 'splice' || $subname eq 'keys' || $subname eq 'values' || $subname eq 'sort' || $subname eq 'chomp' || $subname eq 'lc' || $subname eq 'abs' ) {
                 return $subname . emit_parenthesis( $n->{param} );
             }
 
@@ -1312,7 +1312,7 @@ sub infix {
         return _emit( $n->{exp1} ) . ' .= ' . _emit_str( $n->{exp2} );
     }
     if ( $n->{op1} eq '//'  ||
-         $n->{op1} eq 'err' ) {
+         $n->{op1} eq 'orelse' ) {
 
         # ( !defined ($::TMP=( my $x = $v )) ? $y : $::TMP )
         my $id1 = $id++;

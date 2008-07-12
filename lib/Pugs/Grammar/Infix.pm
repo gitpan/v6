@@ -124,6 +124,12 @@ BEGIN {
         precedence => 'equal',
         other => 'Z',
     );
+    __PACKAGE__->add_rule( 
+        name => ';',
+        assoc => 'list',
+        precedence => 'equal',
+        other => 'Z',
+    );
     
     __PACKAGE__->add_rule( 
         name => 'and',
@@ -139,7 +145,7 @@ BEGIN {
         other => 'and',
     );
     __PACKAGE__->add_rule( 
-        name => 'err',
+        name => 'orelse',
         assoc => 'left',
         precedence => 'equal',
         other => 'or',

@@ -2,7 +2,31 @@
 # this is needed by v6.pm (perl6-in-perl5)
 use v6-alpha;
 
-module Test-0.0.7;
+module Test-0.0.8;
+
+#if substr($*PROGRAM_NAME, -2) eq '.t' {
+#    my $script = slurp($*PROGRAM_NAME);
+#    my $comp = lc $?COMPILER;
+#    if $script ~~ /^^ '#?' 'pugs' ':'/ {	# s/b $comp
+#	my $fud = $*PROGRAM_NAME;
+#	$fud ~~ s/t$/fud/ or die "oops";
+#	my $fudge;
+#	for 0..10 -> $x {
+#	    $fudge = '../' x $x ~ 'util/fudge';
+#	    last if $fudge ~~ :f;
+#	}
+#	system("$fudge $comp $*PROGRAM_NAME >$fud");
+#	try {
+#	    evalfile $fud;
+#	}
+#	say "# Fudged!";
+#	fail;
+#	exit(1);
+#	abort();
+#	kill -9, $*PID;
+#	die "Fudged";
+#    }
+#}
 
 ### CONSTANTS
 
@@ -27,6 +51,13 @@ $Test::force_todo_test_junction = '';
 $Test::testing_started = 1;
 
 ### FUNCTIONS
+
+# Compare numeric values with approximation
+
+sub approx (Num $a, Num $b) returns Bool is export {
+    my $EPSILON = 0.00001;
+    (abs($a - $b) < $EPSILON);
+}
 
 ## plan
 
@@ -62,6 +93,12 @@ sub is_deeply(Any $got, Any $expected, Str $desc?, :$todo, :$depends) returns Bo
     Test::proclaim($test, $desc, $todo, $got_perl, $expected_perl, $depends);
 }
 
+## is_approx   Approximately compare two Nums
+
+sub is_approx(Num $got, Num $expected, Str $desc?, :$todo, :$depends) returns Bool is export {
+    my $test := Test::approx($got, $expected);
+    Test::proclaim($test, $desc, $todo, $got, $expected, $depends);
+}
 
 ## isnt
 
@@ -110,7 +147,12 @@ sub cmp_ok (Str $got, Code &compare_func, Str $expected, Str $desc?, :$todo, :$d
 sub isa_ok (Any|Junction|Pair $ref is rw, Str $expected_type, Str $desc?, :$todo, :$depends) returns Bool is export {
     my $out := defined($desc) ?? $desc !! "The object is-a '$expected_type'";
     my $test := $ref.isa($expected_type);
-    Test::proclaim($test, $out, $todo, $ref.WHAT, $expected_type, $depends);
+    Test::proclaim($test, $out, $todo, ~($ref.WHAT), $expected_type, $depends);
+        # Note: the above $ref.WHAT is being cast to a Str because a .defined
+        # on the result of plain .WHAT would be false, which causes
+        # report_failure() to display "undef" for "Actual:" even when
+        # the "actual" contains a valid package name; the Str cast makes "Actual:" work.
+        # At least that .defined matter is the case with Pugs r18102.
 }
 
 ## use_ok
@@ -182,12 +224,12 @@ sub version_lt (Str $version1, Str $version2) returns Bool {
     return False;
 }
 
-sub todo (*%deadline) returns Bool is export {
+sub todo (Str $reason = "fix", *%deadline) returns Bool is export {
     #warn "!!!", %deadline;
     return if ! $?COMPILER.defined;
-    my $spec_ver = %deadline{lc($?COMPILER)};
-    if (!$spec_ver.defined or $spec_ver eq '1' or Test::version_lt($?VERSION, $spec_ver)) {
-        $Test::todo_next_test = True;
+    my $spec_ver = %deadline{lc($?COMPILER)} // %deadline<by> // "Christmas";
+    if (!$spec_ver.defined or $spec_ver eq '1' or $spec_ver gt '9' or Test::version_lt($?VERSION, $spec_ver)) {
+        $Test::todo_next_test = "$reason by $spec_ver" // True;
         return True;
     }
     return False;
@@ -246,7 +288,7 @@ sub proclaim (Bool $cond, Str $desc? is copy, $todo?, Str $got?, Str $expected?,
 
     #warn "todo_next_test: $Test::todo_next_test";
     if $Test::todo_next_test {
-        $context =  "TODO" ~ ($todo.isa('Str') ?? " $todo" !! '');
+        $context =  "TODO " ~ ($todo.isa('Str') ?? $todo !!  $Test::todo_next_test // '');
         $Test::todo_next_test = False;
     } elsif $todo {
         if (substr($todo, 0, 4) eq 'skip') {
@@ -359,6 +401,7 @@ Test - Test support module for perl6
 
   ok(2 + 2 == 5, '2 and 2 make 5', :todo(1));
   is(2 + 2, 5, desc => '2 and 2 make 5', todo => 1);
+  is_approx(pi(), 3.141562, 'approximate compare');
   isa_ok({'one' => 1}, 'Hash', :todo(1));
 
   use_ok('My::Module');
@@ -479,6 +522,13 @@ value with the C<$expected> value.
 These functions both take blocks of code, and test whether they live or die using C<try>
 
 The code must at least be parsable. If the code might not parse, wrap it in C<eval>.
+
+=head3 is_approx
+
+  is_approx (Num $got, Num $expected, Str $desc?, Bool :$todo, Str :$depends) returns Bool
+
+Similar to is(), but compares approximately, to account for floating point
+precision errors.
 
 =head3 is_deeply
 
@@ -649,6 +699,8 @@ Gaal Yahas <gaal@forum2.org>
 Mark Stosberg
 
 Simon Sun <dolmens@gmail.com>
+
+Cosimo Streppone <cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
