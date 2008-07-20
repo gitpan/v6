@@ -18,7 +18,7 @@ use File::Spec;
     name('v6');
 all_from('lib/v6.pm');
 
-requires('Pugs::Compiler::Rule' => '0.17');
+requires('Pugs::Compiler::Rule' => '0.31');
 requires('Module::Compile'      => '0.20');
 requires('Scalar::Util'         => '0');
 requires('Devel::Caller'        => '0.10');
@@ -44,6 +44,7 @@ if (@inc) {
         mkpath(dirname($_));
         my $src = "$inc[-1]/../$_";
         $src = "$inc[-1]/../ext/Test/lib/Test.pm" if $_ eq 't/Test.pm';
+	next unless -f $src;
         copy($src => $_);
         `$^X -i -pe ' s/^use v6;/use v6-alpha;/ ' '$_' `
             if -f $_;

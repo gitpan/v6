@@ -12,6 +12,26 @@ use charnames ":full";
 use constant LEFT  => "\N{LEFT-POINTING DOUBLE ANGLE QUOTATION MARK}";
 use constant RIGHT => "\N{RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK}";
 
+sub q {
+    my $grammar = shift;
+    return $grammar->no_match(@_) unless $_[0];
+    my $pos = $_[1]{p} || 0;
+    my $s = substr( $_[0], $pos );
+    my ($extracted,$remainder) = Text::Balanced::extract_quotelike( 'q' . $s );
+    return $grammar->no_match(@_) unless length($extracted) > 0;
+    $extracted = substr( $extracted, 2, -1 );
+    my $ast;
+    $ast = { 'single_quoted' => $extracted };
+    return Pugs::Runtime::Match->new( { 
+        bool    => \1,
+        str     => \$_[0],
+        match   => [],
+        from    => \$pos,
+        to      => \( length($_[0]) - length($remainder) ),
+        capture => \$ast,
+    } );
+}
+
 sub angle_quoted {
     my $grammar = shift;
     return $grammar->no_match(@_) unless $_[0];
@@ -89,10 +109,10 @@ sub angle_quoted {
   |
     <before '{' >
     [
-        <Pugs::Grammar::Expression.parse>
+        <Pugs::Grammar::Perl6.block>
         { return {
             statement => 'do',
-            exp1 => $/{'Pugs::Grammar::Expression.parse'}() 
+            exp1 => $/{'Pugs::Grammar::Perl6.block'}() 
         } }
     |
         .
@@ -102,15 +122,28 @@ sub angle_quoted {
 
 *double_quoted_text = Pugs::Compiler::Token->compile(q(
     (
-        <!before [ '$' | '@' | '%' | '&' | '"' | '{' ] >
-        [ '\\' . | . ]
+        <!before [ '$' | '@' | '%' | '&' | '"' | '{' | '\\\\' ] > .
     )+
     { return { double_quoted => $/() ,} }
 ))->code;
 
+*double_quoted_escape = Pugs::Compiler::Token->compile(q(
+    \\\\
+    [
+    |   x \\[ $hex := (<xdigit>+) \\]
+        { return { hex_char => $/{'hex'}(),} }
+    |   c \\[ $name := ([ <!before \\] > . ]+) \\]
+        { return { named_char => $/{'name'}(),} }
+    |   .
+        { return { double_quoted => $/() ,} }
+    ]
+))->code;
+
 *double_quoted = Pugs::Compiler::Token->compile(q(
      
-    [  $<q1> := <double_quoted_expression>
+    [
+    |  $<q1> := <double_quoted_escape>
+    |  $<q1> := <double_quoted_expression>
     |  $<q1> := <double_quoted_text>
     ]
     
