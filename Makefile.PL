@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+use 5.008006;
 use strict;
 use warnings;
 
@@ -18,7 +19,7 @@ use File::Spec;
     name('v6');
 all_from('lib/v6.pm');
 
-requires('Pugs::Compiler::Rule' => '0.31');
+requires('Pugs::Compiler::Rule' => '0.32');
 requires('Module::Compile'      => '0.20');
 requires('Scalar::Util'         => '0');
 requires('Devel::Caller'        => '0.10');
