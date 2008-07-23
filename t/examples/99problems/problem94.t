@@ -1,5 +1,7 @@
 use v6-alpha;
 use Test;
+use v6;
+use Test;
 plan 1;
 
 # P94 (***) Generate K-regular simple graphs with N nodes

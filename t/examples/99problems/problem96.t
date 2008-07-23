@@ -1,5 +1,7 @@
 use v6-alpha;
 use Test;
+use v6;
+use Test;
 plan 4;
 
 # P96 (**) Syntax checker (alternative solution with difference lists)

@@ -1,5 +1,7 @@
 use v6-alpha;
 use Test;
+use v6;
+use Test;
 
 # L<S02/Immutable types/Pair        A single key-to-value association>
 # There ought to be a better reference for this.

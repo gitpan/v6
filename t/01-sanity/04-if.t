@@ -1,4 +1,6 @@
 use v6-alpha;
+use Test;
+use v6;
 
 # Checking that testing is sane: if
 

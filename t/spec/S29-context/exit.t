@@ -1,5 +1,7 @@
 use v6-alpha;
 use Test;
+use v6;
+use Test;
 
 # L<S29/Context/"=item exit">
 

@@ -1,5 +1,7 @@
 use v6-alpha;
 use Test;
+use v6;
+use Test;
 plan 1;
 
 # P60 (**) Construct height-balanced binary trees with a given number of nodes

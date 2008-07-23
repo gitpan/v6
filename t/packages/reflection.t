@@ -1,4 +1,6 @@
 use v6-alpha;
+use Test;
+use v6;
 
 use Test;
 plan 1;

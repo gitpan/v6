@@ -1,4 +1,6 @@
 use v6-alpha;
+use Test;
+use v6;
 
 # L<S16/"Input and Output"/=item say>
 

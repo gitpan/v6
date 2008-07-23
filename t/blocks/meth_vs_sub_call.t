@@ -1,5 +1,7 @@
 use v6-alpha;
 use Test;
+use v6;
+use Test;
 plan 3;
 
 #L<S12/Method call vs. Subroutine call>

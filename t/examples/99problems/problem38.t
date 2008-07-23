@@ -1,5 +1,7 @@
 use v6-alpha;
 use Test;
+use v6;
+use Test;
 plan 1;
 
 # P38 (*) Compare the two methods of calculating Euler's totient function.

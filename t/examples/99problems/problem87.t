@@ -1,5 +1,7 @@
 use v6-alpha;
 use Test;
+use v6;
+use Test;
 plan 1;
 
 # P87 (**) Depth-first order graph traversal (alternative solution)

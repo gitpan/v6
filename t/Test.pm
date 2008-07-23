@@ -1,3 +1,5 @@
+use v6-alpha;
+use Test;
 
 # this is needed by v6.pm (perl6-in-perl5)
 use v6-alpha;

@@ -1,5 +1,7 @@
-# L<S02/"Whitespace and Comments"/space before it, but may be written in any>
 use v6-alpha;
+use Test;
+# L<S02/"Whitespace and Comments"/space before it, but may be written in any>
+use v6;
 
 # Checking that testing is sane: counted tests
 
