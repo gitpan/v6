@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 205;
-force_todo(120, 122);
+force_todo(120, 122, 1..2, 118, 119, 126, 145..146);
 ok("\c[COMBINING GRAVE ACCENT]" ~~ m/^<-isModifierSymbol>$/, q{Match related internally inverted <isModifierSymbol>} );
 ok("\c[COMBINING GRAVE ACCENT]" ~~ m/^<!isModifierSymbol>.$/, q{Match related externally inverted <isModifierSymbol>} );
 ok("\x[69E7]\c[COMBINING GRAVE ACCENT]\c[CIRCUMFLEX ACCENT]" ~~ m/<+isModifierSymbol>/, q{Match unanchored <isModifierSymbol>} );

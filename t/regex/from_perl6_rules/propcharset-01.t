@@ -1,6 +1,7 @@
 use v6-alpha;
 use Test;
 plan 190;
+force_todo(1, 2, 10..14, 21..23, 31..35, 42);
 
 
 ok("\c[DEVANAGARI SIGN VISARGA]" ~~ m/^<+isMc>$/, q{Match <isMc> (SpacingMark)} );

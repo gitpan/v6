@@ -1,6 +1,7 @@
 use v6-alpha;
 use Test;
 plan 185;
+force_todo(108, 109, 141, 142);
 ok(!( "\c[LEFT PARENTHESIS]" ~~ m/^<-isPs>$/ ), q{Don't match internally inverted <isPs> (OpenPunctuation)} );
 ok(!( "\x[B601]"  ~~ m/^<+isPs>$/ ), q{Don't match unrelated <isPs> (OpenPunctuation)} );
 ok("\x[B601]"  ~~ m/^<!isPs>.$/, q{Match unrelated externally inverted <isPs> (OpenPunctuation)} );

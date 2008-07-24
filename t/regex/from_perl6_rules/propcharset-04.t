@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 207;
-force_todo(137, 139, 167);
+force_todo(137, 139, 167, 39, 40, 47, 96, 97, 99, 100, 105, 106, 113, 135..136, 143..145, 152..154, 161, 168..169, 207);
 ok("\x[85D3]"  ~~ m/^<-isBidiES>$/, q{Match unrelated internally inverted (European Number Separator)} );
 ok("\x[85D3]\c[SOLIDUS]" ~~ m/<+isBidiES>/, q{Match unanchored (European Number Separator)} );
 

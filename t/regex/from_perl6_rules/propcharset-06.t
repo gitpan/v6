@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 182;
-force_todo(171, 173);
+force_todo(171, 173, 4, 5);
 ok(!( "\c[TIBETAN SYLLABLE OM]" ~~ m/^<[A]-isTibetan>$/ ), q{Don't match compound inverted <isTibetan>} );
 ok(!( "\c[TIBETAN SYLLABLE OM]" ~~ m/^<-isTibetan>$/ ), q{Don't match internally inverted <isTibetan>} );
 ok(!( "\x[19C9]"  ~~ m/^<+isTibetan>$/ ), q{Don't match unrelated <isTibetan>} );
