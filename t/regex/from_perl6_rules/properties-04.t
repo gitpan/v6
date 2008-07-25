@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 213;
-force_todo(185);
+force_todo(185, 10..11, 20..21, 30..31, 161, 167, 186..187);
 ok("\x[C549]" ~~ m/^<-isLatin>$/, q{Match related inverted <?isLatin>} );
 ok("\x[C549]\x[C549]\c[LATIN CAPITAL LETTER A]" ~~ m/<?isLatin>/, q{Match unanchored <?isLatin>} );
 

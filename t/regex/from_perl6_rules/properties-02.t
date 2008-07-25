@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 216;
-force_todo(157, 158);
+force_todo(157, 158, 22..23, 59..60, 156, 162, 204..205);
 
 ok(!( "\x[4A1C]"  ~~ m/^<?isSymbol>$/ ), q{Don't match unrelated <?isSymbol>} );
 ok("\x[4A1C]"  ~~ m/^<!isSymbol>.$/, q{Match unrelated negated <?isSymbol>} );

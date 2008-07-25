@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 181;
-force_todo(42, 43, 89, 125, 126, 144, 167, 168);
+force_todo(42, 43, 89, 125, 126, 144, 167, 168, 41, 47, 90..91, 124, 131..133, 145..146, 159..161, 165..166, 170..171, 175);
 
 ok("\x[857B]"  ~~ m/^<!isLogicalOrderException>.$/, q{Match unrelated negated <?isLogicalOrderException>} );
 ok("\x[857B]"  ~~ m/^<-isLogicalOrderException>$/, q{Match unrelated inverted <?isLogicalOrderException>} );

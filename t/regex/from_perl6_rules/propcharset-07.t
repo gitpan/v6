@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 172;
-force_todo(49, 94, 96, 109, 154);
+force_todo(49, 94, 96, 109, 154, 11..12, 50..51, 92..93, 101..103, 110..111, 155..156);
 ok(!( "\x[A746]"  ~~ m/^<+isOtherUppercase>$/ ), q{Don't match unrelated <isOtherUppercase>} );
 ok("\x[A746]"  ~~ m/^<!isOtherUppercase>.$/, q{Match unrelated externally inverted <isOtherUppercase>} );
 ok("\x[A746]"  ~~ m/^<-isOtherUppercase>$/, q{Match unrelated internally inverted <isOtherUppercase>} );

@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 179;
-ok(!( "\c[KATAKANA LETTER SMALL KU]" ~~ m/^<!isInKatakanaPhoneticExtensions>.$/ ), q{Don't match negated <?isInKatakanaPhoneticExtensions>} );
+force_todo(80..81, 118..119, 166..167);ok(!( "\c[KATAKANA LETTER SMALL KU]" ~~ m/^<!isInKatakanaPhoneticExtensions>.$/ ), q{Don't match negated <?isInKatakanaPhoneticExtensions>} );
 ok(!( "\c[KATAKANA LETTER SMALL KU]" ~~ m/^<-isInKatakanaPhoneticExtensions>$/ ), q{Don't match inverted <?isInKatakanaPhoneticExtensions>} );
 ok(!( "\x[97C2]"  ~~ m/^<?isInKatakanaPhoneticExtensions>$/ ), q{Don't match unrelated <?isInKatakanaPhoneticExtensions>} );
 ok("\x[97C2]"  ~~ m/^<!isInKatakanaPhoneticExtensions>.$/, q{Match unrelated negated <?isInKatakanaPhoneticExtensions>} );

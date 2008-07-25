@@ -80,7 +80,7 @@ sub _var_set {
 
 sub _not_implemented {
     my ( $n, $what ) = @_;
-    return "die q(not implemented $what: " . Dumper( $n ) . ")";
+    return "die " . _emit_single_quoted( "not implemented $what: " . Dumper( $n ) );
 }
 
 # modified from http://www.stonehenge.com/merlyn/UnixReview/col30.html
@@ -905,6 +905,9 @@ sub default {
             if ($n->{method}{dot_bareword} eq 'elems') {
                 return "( scalar "._emit( $n->{self} )." )";
             }
+            if ($n->{method}{bareword} eq '<>') {
+                return _not_implemented("<>", "array method");
+            }
             return _emit( $n->{method} ).' '.
                 ( join( ',',
                     grep { length $_ }
@@ -1493,6 +1496,19 @@ sub infix {
             $n->{op1} . ' ' . "sub " . _emit( $n->{exp2} );
     }
 
+    if ( $n->{op1} eq '..' ) {
+        return '(' . _emit( $n->{exp1} ) . ' .. ' . _emit( $n->{exp2} ) . ')';
+    }
+    if ( $n->{op1} eq '^..' ) {
+        return '((' . _emit( $n->{exp1} ) . ')+1 .. ' . _emit( $n->{exp2} ) . ')';
+    }
+    if ( $n->{op1} eq '..^' ) {
+        return '(' . _emit( $n->{exp1} ) . ' .. (' . _emit( $n->{exp2} ) . ')-1)';
+    }
+    if ( $n->{op1} eq '^..^' ) {
+        return '((' . _emit( $n->{exp1} ) . ')+1 .. (' . _emit( $n->{exp2} ) . ')-1)';
+    }
+    
     return '(' . _emit( $n->{exp1} ) . ' ' .
         $n->{op1} . ' ' . _emit( $n->{exp2} ) . ')';
 }

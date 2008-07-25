@@ -1,6 +1,7 @@
 use v6-alpha;
 use Test;
 plan 173;
+force_todo(48, 49);
 ok("\c[HANGUL CHOSEONG KIYEOK]" ~~ m/^<[A]+isInHangulJamo>$/, q{Match compound <isInHangulJamo>} );
 ok(!( "\c[HANGUL CHOSEONG KIYEOK]" ~~ m/^<!isInHangulJamo>.$/ ), q{Don't match externally inverted <isInHangulJamo>} );
 ok(!( "\c[HANGUL CHOSEONG KIYEOK]" ~~ m/^<[A]-isInHangulJamo>$/ ), q{Don't match compound inverted <isInHangulJamo>} );

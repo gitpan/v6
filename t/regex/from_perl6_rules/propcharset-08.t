@@ -1,6 +1,7 @@
 use v6-alpha;
 use Test;
 plan 173;
+force_todo(163..164, 171..173);
 
 # InArabicPresentationFormsB
 

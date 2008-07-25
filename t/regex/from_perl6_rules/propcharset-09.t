@@ -1,6 +1,7 @@
 use v6-alpha;
 use Test;
 plan 173;
+force_todo(7);
 ok(!( "\c[COMBINING LEFT HARPOON ABOVE]" ~~ m/^<!isInCombiningDiacriticalMarksforSymbols>.$/ ), q{Don't match externally inverted <isInCombiningDiacriticalMarksforSymbols>} );
 ok(!( "\c[COMBINING LEFT HARPOON ABOVE]" ~~ m/^<[A]-isInCombiningDiacriticalMarksforSymbols>$/ ), q{Don't match compound inverted <isInCombiningDiacriticalMarksforSymbols>} );
 ok(!( "\c[COMBINING LEFT HARPOON ABOVE]" ~~ m/^<-isInCombiningDiacriticalMarksforSymbols>$/ ), q{Don't match internally inverted <isInCombiningDiacriticalMarksforSymbols>} );

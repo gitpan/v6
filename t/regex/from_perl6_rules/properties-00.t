@@ -1,7 +1,7 @@
 use v6-alpha;
 use Test;
 plan 189;
-force_todo(4, 11, 99);
+force_todo(4, 11, 99, 5..6, 12..13, 100..101, 134..135, 151..152, 168..169);
 use v6;
 use Test;
 
