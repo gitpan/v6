@@ -1,5 +1,5 @@
 package v6;
-$v6::VERSION = '0.027';
+$v6::VERSION = '0.028';
 
 # Documentation in the __END__
 use 5.006;
@@ -92,6 +92,7 @@ sub pmc_compile {
             "use lib split(/\\Q\$Config{path_sep}/, \$ENV{PERL6LIB} || '');\n"
         ) : '').
         "use Scalar::Util;
+         use Quantum::Superpositions;
          use Pugs::Runtime::Perl6;
          use Pugs::Runtime::Perl6Prelude;
          use Pugs::Runtime::Perl5Container;
@@ -105,6 +106,7 @@ sub pmc_compile {
          undef \$::_V6_MATCH_;
          my \%_V6_PAD;
          our \%_V6_STATE;
+         bool->import();  # True, False
         " .  
         # "Pugs::Runtime::Perl6Prelude->import();\n" .   # XXX - is import() needed?
         $perl5 . "\n" .

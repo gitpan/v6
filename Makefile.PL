@@ -19,9 +19,10 @@ use File::Spec;
     name('v6');
 all_from('lib/v6.pm');
 
-requires('Pugs::Compiler::Rule' => '0.34');
+requires('Pugs::Compiler::Rule' => '0.35');
 requires('Module::Compile'      => '0.20');
 requires('Scalar::Util'         => '0');
+requires('Quantum::Superpositions' => '0');
 requires('Devel::Caller'        => '0.10');
 requires('Data::Bind'           => '0.28');
 requires('Sub::Multi'           => '0.003');
@@ -120,6 +121,9 @@ $rewrite_test = sub {
               : "" )
             . $text;
     }    
+    if ( $out eq 't/regex/p6regex/p6regex.t' ) {
+        $text =~ s/^\s*plan \d+;/plan 535;\nforce_todo(18..29,49..54,62,64,66,68,77,79,81..92,94..96,101..113,247,254..255,257,259..263,266,269,274,284,286,301,303..304,314,332..372,374..388,393..394,398,400..402,404..433,484..499,502,504,507,516..522,526..528);/m;
+    }
     
     # add "use Test" to most files
     if ( $out ne 't/01-sanity/05-sub.t' ) {

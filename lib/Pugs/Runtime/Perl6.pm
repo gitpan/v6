@@ -22,13 +22,14 @@ use constant NaN => Inf - Inf;
 
 sub perl {
     local $Data::Dumper::Terse    = 1;
-    my $can = UNIVERSAL::can($_[0] => 'perl');
-    if ($can) {
-        $can->($_[0]);
-    }
-    else {
-        Dumper($_[0]);
-    }
+    my $self = shift;
+    my $can = UNIVERSAL::can($self => 'perl');
+    my $v = $can
+        ? $can->($self)
+        : Dumper($self);
+    chomp $v;
+    return $v . ', ' . perl( @_ ) if @_;
+    return $v;
 }
 
 sub yaml {
@@ -183,16 +184,38 @@ package Pugs::Runtime::Perl6::IO;
     }
     
     sub slurp {
-        my $self = $_[0];
-        my $content;
-        local $/; 
-        $content = <$self>;
-        return bless \$content, 'Pugs::Runtime::Perl6::Scalar';
+        if ( wantarray ) {
+            my @a;
+            if ( ref( $_[0] ) eq 'IO::File' ) {
+                my $f = shift;
+                @a = <$f>;
+            }
+            else {
+                local( @ARGV ) = ( @_ ); 
+                @a = <ARGV>;
+            }
+            chomp @a;
+            return @a;
+        }
+
+            if ( ref( $_[0] ) eq 'IO::File' ) {
+                return <$_[0]>;
+            }
+            else {
+                local( $/, @ARGV ) = ( undef, @_ ); 
+                return <ARGV>;
+            }
     }
 
 package Pugs::Runtime::Perl6::Routine;
     use B ();
     use Devel::Caller ();
+    use overload (
+        '""'     => sub { "" . $_[0]->code->() },
+        '0+'     => sub { 0 + $_[0]->code->() },
+        'bool'   => sub { $_[0]->code->() ? 1 : 0 },
+        fallback => 1,
+    );
     
     sub new {
         my ($class, $cv) = @_;
@@ -244,6 +267,11 @@ package Pugs::Runtime::Perl6::ReadOnly;
 
 package Pugs::Runtime::Perl6::Scalar;
     use Scalar::Util qw(looks_like_number);
+    
+    sub elems {
+        return scalar @{$_[0]} if ref($_[0]) eq 'ARRAY';
+        return 1;
+    }
     
     sub perl {
         local $Data::Dumper::Terse    = 1;
@@ -349,6 +377,15 @@ package Pugs::Runtime::Perl6::Scalar;
     }
     
 package Pugs::Runtime::Perl6::Array;
+    use overload (
+        '""'     => \&str,
+        '0+'     => sub { scalar @{$_[0]} },
+        'bool'   => sub { scalar @{$_[0]} ? 1 : 0 },
+        fallback => 1,
+    );
+    sub str {
+        join( " ", @{$_[0]} )
+    }
 
     sub map {
         my ($code, @array);
