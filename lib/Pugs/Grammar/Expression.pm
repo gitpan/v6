@@ -207,6 +207,17 @@ sub lexer {
             #print "Lexer: Term done\n";
             $m2 = Pugs::Grammar::Quote->parse( $match, { p => $pos } )
                 unless $m2;
+                
+            my $cap = $m2->();
+            #print Dumper($cap);
+            if ( ref($cap) && exists $cap->{bare_sigil} ) {
+                unless (  $m2->tail =~ /^\s*[\,\)\}\]]/s 
+                       || $m2->tail =~ /^\s*$/s
+                       ) {
+                    undef $m2
+                }
+            }
+
         }
         # print "Lexer: m1 = " . Dumper($m1) . "m2 = " . Dumper($m2);
 
@@ -455,11 +466,23 @@ sub lexer {
         # longest token
         $m = undef;
         if ( $m1 && $m2 ) {
-            if ( $m1->to < $m2->to ) {
-                $m = $m2
+            if ( exists $m2->()->{bare_sigil} ) {
+                if (  $m2->tail =~ /^\s*[\,\)\}\]]/s 
+                   || $m2->tail =~ /^\s*$/s
+                   ) {
+                    $m = $m2
+                }
+                else {
+                    $m = $m1
+                }
             }
             else {
-                $m = $m1
+                if ( $m1->to < $m2->to ) {
+                    $m = $m2
+                }
+                else {
+                    $m = $m1
+                }
             }
         }
         else {

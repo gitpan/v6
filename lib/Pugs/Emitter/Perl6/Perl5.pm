@@ -383,6 +383,8 @@ sub assoc_list {
         return join ( ",\n",
             map { exists $_->{null}
                 ? ()
+                : exists $_->{bare_sigil}
+                ? 'undef'
                 : _emit( $_ )
             } @{$n->{list}}
         );
@@ -1437,6 +1439,13 @@ sub infix {
             ' ? ( ' . _emit( $n->{exp2} ) . ' ) ' .
             ' : $_V6_PAD{'.$id1.'} ) ';
     }
+    if ( $n->{op1} eq '//=' ) {
+        my $id1 = $id++;
+        return
+            ' ( !defined ( $_V6_PAD{'.$id1.'} = ( ' . _emit( $n->{exp1} ) . ' )) ' .
+            ' ? ( ' . _emit( $n->{exp1} ) . ' = ' . _emit( $n->{exp2} ) . ' ) ' .
+            ' : $_V6_PAD{'.$id1.'} ) ';
+    }
     if ( $n->{op1} eq 'does' ) {
         # XXX - fix this when Moose implements '$object does'
         #print Dumper( $n->{exp2} );
@@ -1477,9 +1486,23 @@ sub infix {
             if ( !$rx->{options}{perl5} && !$rx->{options}{p5} ) {
                 my $regex = $rx->{rx};
                 # XXX: hack for /$pattern/
-                $regex = 'q{'.$regex.'}' unless $regex =~ m/^\$[\w\d]+/;
-                return '$::_V6_MATCH_ = Pugs::Compiler::Regex->compile( '.$regex.' )->match('._emit($n->{exp1}).')';
+                $regex = _emit_single_quoted( $regex ) unless $regex =~ m/^\$[\w\d]+/;
+                return '( $::_V6_MATCH_ = Pugs::Compiler::Regex->compile( '.$regex.' )->match('._emit($n->{exp1}).') )';
             }
+            my $regex = $rx->{rx};
+            my $code;
+            eval {
+                $code = Pugs::Compiler::RegexPerl5->compile( $regex, { compile_only => 1 } )->{perl5};
+                # print $code, "# $regex /end\n";
+            }
+            or do {
+                print "Error in perl 5 regex: $regex : $@\n";
+                die   "Error in perl 5 regex: $regex : $@\n";
+            };
+            return '( $::_V6_MATCH_ = ' 
+                        . $code 
+                        . '->( __PACKAGE__, \\('._emit($n->{exp1}).') ) '
+                 . ')';
         }
         if (   exists $n->{exp2}{int} && defined $n->{exp2}{int} 
             || exists $n->{exp2}{num} && defined $n->{exp2}{num} 
@@ -1594,7 +1617,7 @@ sub infix {
                 _emit(
                   {
                     fixity => 'infix',
-                    op1 => { op => '+' },
+                    op1 => '+',
                     exp1 => $n->{exp1},
                     exp2 => $n->{exp2},
                   }
@@ -1689,6 +1712,7 @@ sub postcircumfix {
                )
             && ( exists $n->{exp1}{array}
                 || (  exists $n->{exp1}{op1}
+                   && exists $n->{exp2}{fixity}
                    && $n->{exp1}{fixity} eq 'circumfix'
                    && $n->{exp1}{op1} eq '('
                    && exists $n->{exp1}{exp1}{list}
@@ -1700,6 +1724,7 @@ sub postcircumfix {
                 unless exists $n->{exp2}{list}
                     || exists $n->{exp2}{array}
                     || (  exists $n->{exp2}{op1}
+                       && exists $n->{exp2}{fixity}
                        && $n->{exp2}{fixity} eq 'circumfix'
                        && $n->{exp2}{op1} eq '('
                        && exists $n->{exp2}{exp1}{list}
