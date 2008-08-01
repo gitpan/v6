@@ -1,5 +1,5 @@
 package v6;
-$v6::VERSION = '0.031';
+$v6::VERSION = '0.032';
 
 # Documentation in the __END__
 use 5.006;
@@ -93,6 +93,7 @@ sub pmc_compile {
         ) : '').
         "use Scalar::Util;
          use Quantum::Superpositions;
+         use Math::Complex ();
          use Pugs::Runtime::Perl6;
          use Pugs::Runtime::Perl6Prelude;
          use Pugs::Runtime::Perl5Container;
@@ -399,6 +400,13 @@ The default is '-Bperl5:Pugs::Emitter::Perl6::Perl5'.
 '-Bperl5' also invokes the default backend.
 
     $ perl -e 'use v6-alpha' - --compile-only -Bperl5:MyEmitter ' 42.say '
+
+    $ perl -e 'use v6-alpha' - --compile-only -BPugs::Emitter::YAML ' 123 '
+    --- 
+    statements: 
+      - 
+        int: 123
+        pos: 1
 
 The backend module must provide the C<emit($grammar, $ast)> subroutine.
 
