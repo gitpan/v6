@@ -1,3 +1,12 @@
+0.033  2010-08-30
+- new v6.pm module loader. 
+  Written by Pawel Murias (pmurias++)
+- "v6-perlito" now loads the Perlito compiler
+
+Removed features:
+- "v6-alpha" (Pugs::Compiler::Perl6) no longer supported
+- "-e" command-line option no longer supported
+
 0.032  2008-08-01
 - pi, Inf, NaN
 - more operators
