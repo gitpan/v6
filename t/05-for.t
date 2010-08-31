@@ -1,4 +1,4 @@
-use v6-perlito; no warnings;
+use v6-perlito;
 
 class Main {
     say '1..11';

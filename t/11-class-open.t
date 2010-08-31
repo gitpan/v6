@@ -1,4 +1,4 @@
-use v6-perlito; no warnings;
+use v6-perlito;
 
 class Other {
     method subr( $a, $b ) { $a + $b };

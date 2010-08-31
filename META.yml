@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               v6
-version:            0.033
+version:            0.034
 abstract:           A Perl 6 implementation
 author:
     - Flávio S. Glock <fglock@gmail.com>
