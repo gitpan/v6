@@ -1,3 +1,6 @@
+0.038  2010-09-02
+- perlito shell uses Term::ReadLine
+
 0.037  2010-09-01
 - added "perlito" command-line compiler and shell
 
