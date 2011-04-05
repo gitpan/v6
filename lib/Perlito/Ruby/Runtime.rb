@@ -10,7 +10,7 @@
 # 
 # COPYRIGHT
 # 
-# Copyright 2010 by Flavio Soibelmann Glock and others.
+# Copyright 2010, 2011 by Flavio Soibelmann Glock and others.
 # 
 # This program is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -229,9 +229,6 @@ class IO
 end
 
 class C_Main
-    def f_newline()
-        return "\n"
-    end
     def f_lisp_escape_string(s)
         o = s.gsub( "\\", "\\\\\\");
         o = o.gsub( '"',  "\\\\\"");

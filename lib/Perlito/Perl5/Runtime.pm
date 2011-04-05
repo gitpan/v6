@@ -1,6 +1,7 @@
 
 use v5;
 binmode(STDOUT, ":utf8");
+use Scalar::Util;
 
 {
     package Perlito::Match;
@@ -43,6 +44,10 @@ binmode(STDOUT, ":utf8");
     }
     sub values { 
         CORE::values %{$_[0]};
+    }
+    sub pairs {
+        map Pair->new( key => $_, value => $_[0]{$_} ),
+            CORE::keys %{$_[0]}
     }
     
     sub flat {
@@ -146,6 +151,7 @@ package Main;
         local $_;
         if ( ref($_[0]) ) {
             return join( " ", map { Str($_) } @{$_[0]} ) if ref($_[0]) eq 'ARRAY';
+            return join( "\n", map { $_ . "\t" . Str($_[0]{$_}) } keys %{$_[0]} ) if ref($_[0]) eq 'HASH';
         }
         return $_[0];
     }
@@ -158,11 +164,10 @@ package Main;
             }
             CORE::print $_
         } 
+        return 1;
     }
     sub say   { Main::print( @_, "\n" ) }
     sub chars { length( $_[0] ) }
-    sub newline { "\n" }
-    sub quote   { '"' }
     sub isa { 
         my $ref = ref($_[0]);
            (  $ref eq 'ARRAY' 
@@ -178,6 +183,18 @@ package Main;
         || (  ref( $_[1] ) 
            && $ref eq ref( $_[1] ) 
            )
+    }
+
+    sub pairs {
+        [
+            map Pair->new( key => $_, value => $_[0]{$_} ),
+                CORE::keys %{$_[0]}
+        ]
+    }
+ 
+    sub id {
+           Scalar::Util::refaddr($_[0]) 
+        || "_id_" . $_[0]
     }
 
     sub perl {
@@ -234,7 +251,7 @@ package Main;
     sub bool { 
         my $ref = ref($_[0]);
         return scalar(@{$_[0]}) if $ref eq 'ARRAY';
-        return $_[0];
+        return $_[0] ? 1 : 0;
     }
 
     # Lisp emitter
@@ -308,7 +325,7 @@ The Pugs Team E<lt>perl6-compiler@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright 2006, 2009 by Flavio Soibelmann Glock and others.
+Copyright 2006, 2009, 2011 by Flavio Soibelmann Glock and others.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

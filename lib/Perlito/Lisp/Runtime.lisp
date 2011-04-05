@@ -3,7 +3,7 @@
 ;;
 ;; Author: Flavio Soibelmann Glock <fglock@gmail.com>
 ;;
-;; Copyright 2009 by Flavio Soibelmann Glock and others.
+;; Copyright 2009, 2011 by Flavio Soibelmann Glock and others.
 ;; 
 ;; This program is free software; you can redistribute it and/or modify it
 ;; under the same terms as Perl itself.
@@ -357,12 +357,6 @@
     ;; (setf (slot-value m 'array) (list (sv-undef) (sv-undef) (sv-undef)))))
 
 ;; compiler utils
-
-(if (not (ignore-errors (find-method 'sv-newline () ())))
-  (defgeneric sv-newline (class)
-      (:documentation "the newline string")))
-(defmethod sv-newline (class)
-  (format nil "~%"))
 
 ;; function replace-substring pasted from: 
 ;;   http://web.mit.edu/maxima_v5.13.0/src/maxima-5.13.0/configure.lisp

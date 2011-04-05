@@ -5,6 +5,7 @@ use strict;
 use warnings;
 no warnings ('redefine', 'once', 'void', 'uninitialized', 'misc', 'recursion');
 use Perlito::Perl5::Runtime;
+use Perlito::Perl5::Prelude;
 our $MATCH = Perlito::Match->new();
 {
 package GLOBAL;
@@ -15,7 +16,16 @@ sub new { shift; bless { @_ }, "GLOBAL" }
 {
 package Main;
 sub new { shift; bless { @_ }, "Main" }
-sub to_lisp_identifier { my $ident = $_[0]; return('sv-' . $ident) }
+sub to_lisp_identifier { my $ident = $_[0]; return scalar ('sv-' . $ident) }
+}
+
+;
+{
+package Pair;
+sub new { shift; bless { @_ }, "Pair" }
+sub key { $_[0]->{key} };
+sub value { $_[0]->{value} };
+sub perl { my $self = $_[0]; return scalar ($self->{key} . ' => ' . Main::perl($self->{value}, )) }
 }
 
 
