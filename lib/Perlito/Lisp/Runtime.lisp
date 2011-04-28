@@ -55,13 +55,6 @@
 (if (not (ignore-errors (find-method 'sv-push () ())))
   (defgeneric sv-push (self x)
       (:documentation "push")))
-(if (not (ignore-errors (find-method 'sv-perl_escape_string () ())))
-  (defgeneric sv-perl_escape_string (self)
-      (:documentation "escape a single quoted perl string value")))
-(if (not (ignore-errors (find-method 'sv-javascript_escape_string () ())))
-  (defgeneric sv-javascript_escape_string (self)
-      (:documentation "escape a single quoted javascript string value")))
-
 
 ;; "undef"
 
@@ -325,17 +318,6 @@
               (let ((m (make-instance 'mp-Perlito-Match))) 
                  (setf (sv-bool m) nil) m)))))
 
-;; token <not_newline>
-(if (not (ignore-errors (find-method 'sv-not_newline () ())))
-   (defgeneric sv-not_newline (sv-grammar &optional sv-str sv-pos)
-      (:documentation "a method")))
-(defmethod sv-not_newline ((sv-grammar mp-Perlito-Grammar) &optional sv-str sv-pos)
-    (if (not (ignore-errors (or (char= (aref sv-str sv-pos) #\Return) (char= (aref sv-str sv-pos) #\Newline))))
-         (let ((m (make-instance 'mp-Perlito-Match))) 
-            (setf (sv-str m) sv-str)(setf (sv-from m) sv-pos)(setf (sv-to m) (+ sv-pos 1))(setf (sv-bool m) 1) m)
-         (let ((m (make-instance 'mp-Perlito-Match))) 
-            (setf (sv-bool m) nil) m)))
-
 
 ;; Match objects
 
@@ -386,23 +368,6 @@
                              "\"" "\\\""))
 (defun mp-Main-sv-lisp_escape_string (s)
   (sv-lisp_escape_string s))
-
-(defmethod sv-perl_escape_string ((s string)) 
-    (replace-substring
-        (replace-substring s "\\" "\\\\")
-                             "'" "\\\'"))
-(defun mp-Main-sv-perl_escape_string (s)
-  (sv-perl_escape_string s))
-
-(defmethod sv-javascript_escape_string ((s string)) 
-    (replace-substring
-      (replace-substring
-        (replace-substring s "\\" "\\\\")
-                             "\"" "\\\"")
-                             "
-" "\\n"))
-(defun mp-Main-sv-javascript_escape_string (s)
-  (sv-javascript_escape_string s))
 
 (if (not (ignore-errors (find-method 'sv-to_lisp_namespace () ())))
   (defgeneric sv-to_lisp_namespace (self)

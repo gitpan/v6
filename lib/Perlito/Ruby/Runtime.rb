@@ -156,32 +156,6 @@ class C_Perlito__Grammar
         end
         return m
     end
-    def f_is_newline(s, pos)
-        /^(\r\n?|\n\r?)/.match(s[pos,2])
-        m = C_Perlito__Match.new
-        if $~
-            m.v_str  = s
-            m.v_from = pos
-            m.v_to   = $~.end(1) + pos
-            m.v_bool = true
-        else
-            m.v_bool = false
-        end
-        return m
-    end
-    def f_not_newline(s, pos)
-        /^(\r|\n)/.match(s[pos,1])
-        m = C_Perlito__Match.new
-        if $~
-            m.v_bool = false
-        else
-            m.v_str  = s
-            m.v_from = pos
-            m.v_to   = pos + 1
-            m.v_bool = true
-        end
-        return m
-    end
 end
 
 def _dump(o)
@@ -203,7 +177,9 @@ def mp6_perl(o)
         return 'undef'
     end
     if o.class == String
-        return "'" + $Main.f_perl_escape_string(o) + "'"   
+        o = s.gsub( "\\", "\\\\\\")
+        o = o.gsub( "'",  "\\\\\'")
+        return "'" + o + "'"   
     end
     if o.class == Fixnum || o.class == Float || o.class == Bignum
         return o.to_s
@@ -233,17 +209,6 @@ class C_Main
         o = s.gsub( "\\", "\\\\\\");
         o = o.gsub( '"',  "\\\\\"");
         return o;
-    end
-    def f_javascript_escape_string(s)
-        o = s.gsub( "\\", "\\\\\\");
-        o = o.gsub( '"',  "\\\\\"");
-        o = o.gsub( "\n", "\\\\n");
-        return o;
-    end
-    def f_perl_escape_string(s)
-        o = s.gsub( "\\", "\\\\\\")
-        o = o.gsub( "'",  "\\\\\'")
-        return o
     end
     def f_to_javascript_namespace(s)
         o = s.gsub( "::", "$");

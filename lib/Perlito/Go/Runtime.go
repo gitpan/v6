@@ -871,20 +871,6 @@ func Init_Prelude() {
 		*m.(bool_er).f_bool(Capture{}) = Bool(b1)
 		return &m
 	}
-	Method_Perlito__Grammar.f_not_newline = func(v_grammar *Perlito__Grammar, v Capture) *Any {
-		var s1 = tostr(v.p[0])
-		var i1 = toint(v.p[1])
-		var b1 = (s1[i1] != 13 && s1[i1] != 10)
-		if b1 {
-			i1++
-		}
-		var m Any = new(Perlito__Match)
-		*m.(str_er).f_str(Capture{}) = *v.p[0]
-		*m.(from_er).f_from(Capture{}) = *v.p[1]
-		*m.(to_er).f_to(Capture{}) = Int(i1)
-		*m.(bool_er).f_bool(Capture{}) = Bool(b1)
-		return &m
-	}
 	Method_Perlito__Grammar.f_space = func(v_grammar *Perlito__Grammar, v Capture) *Any {
 		var s1 = tostr(v.p[0])
 		var i1 = toint(v.p[1])
@@ -904,21 +890,6 @@ func Init_Prelude() {
 		return &m
 	}
 
-	Namespace_Main.f_perl_escape_string = func(v Capture) *Any {
-		var s string = tostr(v.p[0])
-		var s1 string = ""
-		for i := 0; i < len(s); i++ {
-			switch {
-			case s[i] == '\\':
-				s1 += "\\\\"
-			case s[i] == '\'':
-				s1 += "\\'"
-			default:
-				s1 += s[i : i+1]
-			}
-		}
-		return toStr(s1)
-	}
 	Namespace_Main.f_lisp_escape_string = func(v Capture) *Any {
 		var s string = tostr(v.p[0])
 		var s1 string = ""
@@ -934,33 +905,7 @@ func Init_Prelude() {
 		}
 		return toStr(s1)
 	}
-	Namespace_Main.f_javascript_escape_string = func(v Capture) *Any {
-		var s string = tostr(v.p[0])
-		var s1 string = ""
-		for i := 0; i < len(s); i++ {
-			switch {
-			case s[i] == '\\':
-				s1 += "\\\\"
-			case s[i] == '"':
-				s1 += "\\\""
-			case s[i] == 13:
-				s1 += "\\n"
-				i1 := i + 1
-				if i1 < len(s) && s[i1] == 10 {
-					i = i1
-				}
-			case s[i] == 10:
-				s1 += "\\n"
-				i1 := i + 1
-				if i1 < len(s) && s[i1] == 13 {
-					i = i1
-				}
-			default:
-				s1 += s[i : i+1]
-			}
-		}
-		return toStr(s1)
-	}
+
 	Namespace_Main.f_to_lisp_namespace = func(v Capture) *Any {
 		var s string = tostr(v.p[0])
 		var s1 string = ""
