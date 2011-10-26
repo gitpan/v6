@@ -18,47 +18,50 @@ package GLOBAL;
         sub new { shift; bless { @_ }, "Python" }
         sub tab {
             my $level = $_[0];
-            ((my  $s = undef) = '');
-            ((my  $count = undef) = $level);
-            for ( ; Main::bool(($count > 0));  ) {
-                ($s = $s . '    ');
-                ($count = ($count - 1))
-            };
-            return scalar ($s)
+            (('    ') x $level)
         };
+        ((my  $Hash_safe_char = bless {}, 'HASH') = do {
+    (my  $Hash_a = bless {}, 'HASH');
+    ($Hash_a->{'_'} = 1);
+    ($Hash_a->{','} = 1);
+    ($Hash_a->{'.'} = 1);
+    ($Hash_a->{':'} = 1);
+    ($Hash_a->{'-'} = 1);
+    ($Hash_a->{'+'} = 1);
+    ($Hash_a->{'*'} = 1);
+    ($Hash_a->{' '} = 1);
+    ($Hash_a->{'('} = 1);
+    ($Hash_a->{')'} = 1);
+    ($Hash_a->{'<'} = 1);
+    ($Hash_a->{'>'} = 1);
+    ($Hash_a->{'['} = 1);
+    ($Hash_a->{']'} = 1);
+    $Hash_a
+});
         sub escape_string {
             my $s = $_[0];
-            (my  $List_out = []);
-            ((my  $tmp = undef) = '');
-            if (Main::bool(($s eq ''))) {
-                return scalar ('u' . chr(39) . chr(39))
-            }
-            else {
-
+            (my  $List_out = bless [], 'ARRAY');
+            ((my  $tmp) = '');
+            if (($s eq '')) {
+                return scalar (('u' . chr(39) . chr(39)))
             };
-            for my $i ( @{[0 .. (Main::chars($s, ) - 1)] || []} ) {
-                ((my  $c = undef) = substr($s, $i, 1));
-                if (Main::bool((((((((((((((($c ge 'a')) && (($c le 'z')))) || (((($c ge 'A')) && (($c le 'Z'))))) || (((($c ge '0')) && (($c le '9'))))) || (($c eq '_'))) || (($c eq ','))) || (($c eq '.'))) || (($c eq ':'))) || (($c eq '-'))) || (($c eq '+'))) || (($c eq '*'))) || (($c eq ' '))))) {
-                    ($tmp = $tmp . $c)
+            for my $i ( @{(bless [0 .. (Main::chars($s, ) - 1)], 'ARRAY')} ) {
+                ((my  $c) = substr($s, $i, 1));
+                if (((((((($c ge 'a')) && (($c le 'z')))) || (((($c ge 'A')) && (($c le 'Z'))))) || (((($c ge '0')) && (($c le '9'))))) || exists($Hash_safe_char->{$c}))) {
+                    ($tmp = ($tmp . $c))
                 }
                 else {
-                    if (Main::bool(($tmp ne ''))) {
-                        push( @{$List_out}, 'u' . chr(39) . $tmp . chr(39) )
-                    }
-                    else {
-
+                    if (($tmp ne '')) {
+                        push( @{$List_out}, ('u' . chr(39) . $tmp . chr(39)) )
                     };
-                    push( @{$List_out}, 'unichr' . chr(40) . do {
+                    push( @{$List_out}, ('unichr(' . do {
     ord($c)
-} . chr(41) );
+} . ')') );
                     ($tmp = '')
                 }
             };
-            if (Main::bool(($tmp ne ''))) {
-                push( @{$List_out}, 'u' . chr(39) . $tmp . chr(39) )
-            }
-            else {
-
+            if (($tmp ne '')) {
+                push( @{$List_out}, ('u' . chr(39) . $tmp . chr(39)) )
             };
             return scalar (Main::join($List_out, ' + '))
         }
@@ -74,34 +77,34 @@ package GLOBAL;
         sub handles_return_exception { $_[0]->{handles_return_exception} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $sig = undef) = $self->{sig});
-            ((my  $pos = undef) = $sig->positional());
-            ((my  $args = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $sig) = $self->{sig});
+            ((my  $pos) = $sig->positional());
+            ((my  $args) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-            for my $field ( @{($pos || []) || []} ) {
+            for my $field ( @{($pos)} ) {
                 push( @{$args}, $field->emit_python_name() )
             };
-            ((my  $block = undef) = Perlito::Python::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1)));
-            (my  $List_s = []);
-            push( @{$List_s}, Python::tab($level) . 'def f_' . $self->{name} . chr(40) . Main::join($args, ', ') . chr(41) . ':' );
-            if (Main::bool($self->{handles_return_exception})) {
-                push( @{$List_s}, Python::tab(($level + 1)) . 'try:' );
+            ((my  $block) = Perlito::Python::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1)));
+            (my  $List_s = bless [], 'ARRAY');
+            push( @{$List_s}, (Python::tab($level) . ('def f_') . $self->{name} . ('(') . Main::join($args, (', ')) . ('):')) );
+            if ($self->{handles_return_exception}) {
+                push( @{$List_s}, (Python::tab(($level + 1)) . ('try:')) );
                 push( @{$List_s}, $block->emit_python_indented(($level + 2)) );
-                push( @{$List_s}, Python::tab(($level + 1)) . 'except mp6_Return, r:' );
-                push( @{$List_s}, Python::tab(($level + 2)) . 'return r.value' )
+                push( @{$List_s}, (Python::tab(($level + 1)) . ('except mp6_Return, r:')) );
+                push( @{$List_s}, (Python::tab(($level + 2)) . ('return r.value')) )
             }
             else {
                 push( @{$List_s}, $block->emit_python_indented(($level + 1)) )
             };
-            return scalar (Main::join($List_s, chr(10)))
+            return scalar (Main::join($List_s, (chr(10))))
         }
     }
 
@@ -112,8 +115,8 @@ $self->emit_python_indented(0)
         sub block { $_[0]->{block} };
         sub needs_return { $_[0]->{needs_return} };
         sub top_level { $_[0]->{top_level} };
-        (my  $ident = undef);
-        (my  $List_anon_block = []);
+        (my  $ident);
+        (my  $List_anon_block = bless [], 'ARRAY');
         sub push_stmt_python {
             my $block = $_[0];
             push( @{$List_anon_block}, $block )
@@ -124,11 +127,11 @@ $self->emit_python_indented(0)
         };
         sub has_my_decl {
             my $self = $_[0];
-            for my $decl ( @{$self->{block} || []} ) {
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my'))))) {
+            for my $decl ( @{$self->{block}} ) {
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my')))) {
                     return scalar (1)
                 };
-                if (Main::bool((((Main::isa($decl, 'Apply') && ($decl->code() eq 'infix:' . chr(60) . chr(61) . chr(62))) && Main::isa($decl->arguments()->[0], 'Decl')) && ($decl->arguments()->[0]->decl() eq 'my')))) {
+                if ((((Main::isa($decl, 'Apply') && ($decl->code() eq 'infix:<' . chr(61) . '>')) && Main::isa($decl->arguments()->[0], 'Decl')) && ($decl->arguments()->[0]->decl() eq 'my'))) {
                     return scalar (1)
                 }
             };
@@ -136,142 +139,142 @@ $self->emit_python_indented(0)
         };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            (my  $List_block = []);
-            for ( @{$self->{block} || []} ) {
-                if (Main::bool(defined($_))) {
+            (my  $List_block = bless [], 'ARRAY');
+            for ( @{$self->{block}} ) {
+                if (defined($_)) {
                     push( @{$List_block}, $_ )
                 }
             };
-            if (Main::bool(!Main::bool(($List_block)))) {
+            if (!(($List_block))) {
                 push( @{$List_block}, Apply->new(('code' => 'Mu')) )
             };
-            (my  $List_s = []);
-            (my  $List_tmp = []);
-            for my $stmt ( @{$List_anon_block || []} ) {
+            (my  $List_s = bless [], 'ARRAY');
+            (my  $List_tmp = bless [], 'ARRAY');
+            for my $stmt ( @{$List_anon_block} ) {
                 push( @{$List_tmp}, $stmt )
             };
-            ((my  $has_decl = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $has_decl) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-            ((my  $block = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $block) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-            for my $decl ( @{$List_block || []} ) {
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has'))))) {
+            for my $decl ( @{$List_block} ) {
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has')))) {
                     push( @{$has_decl}, $decl )
                 }
                 else {
-                    if (Main::bool((((Main::isa($decl, 'Apply') && ($decl->code() eq 'infix:' . chr(60) . chr(61) . chr(62))) && Main::isa($decl->arguments()->[0], 'Decl')) && ($decl->arguments()->[0]->decl() eq 'has')))) {
+                    if ((((Main::isa($decl, 'Apply') && ($decl->code() eq 'infix:<' . chr(61) . '>')) && Main::isa($decl->arguments()->[0], 'Decl')) && ($decl->arguments()->[0]->decl() eq 'has'))) {
                         push( @{$has_decl}, $decl )
                     }
                     else {
-                        push( @{(($block) || [])}, $decl )
+                        push( @{(($block))}, $decl )
                     }
                 }
             };
-            if (Main::bool((($has_decl) || []))) {
-                for my $decl ( @{(($has_decl) || []) || []} ) {
-                    if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has'))))) {
-                        ((my  $label = undef) = '_anon_' . Perlito::Python::LexicalBlock::get_ident_python());
-                        push( @{$List_s}, Python::tab($level) . 'def f_' . $label . chr(40) . 'v_self' . chr(41) . ':' );
-                        push( @{$List_s}, Python::tab(($level + 1)) . 'return v_self.v_' . ($decl->var())->name() );
-                        push( @{$List_s}, Python::tab($level) . 'self.__dict__.update' . chr(40) . chr(123) . chr(39) . 'f_' . $decl->var()->name() . chr(39) . ':f_' . $label . chr(125) . chr(41) )
+            if ((($has_decl))) {
+                for my $decl ( @{(($has_decl))} ) {
+                    if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has')))) {
+                        ((my  $label) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+                        push( @{$List_s}, (Python::tab($level) . 'def f_' . $label . '(v_self):') );
+                        push( @{$List_s}, (Python::tab(($level + 1)) . 'return v_self.v_' . ($decl->var())->name()) );
+                        push( @{$List_s}, (Python::tab($level) . ('self.__dict__.update(' . chr(123) . chr(39) . 'f_') . $decl->var()->name() . (chr(39) . ':f_') . $label . (chr(125) . ')')) )
                     };
-                    if (Main::bool((((Main::isa($decl, 'Apply') && ($decl->code() eq 'infix:' . chr(60) . chr(61) . chr(62))) && Main::isa($decl->arguments()->[0], 'Decl')) && ($decl->arguments()->[0]->decl() eq 'has')))) {
-                        ((my  $label = undef) = '_anon_' . Perlito::Python::LexicalBlock::get_ident_python());
-                        push( @{$List_s}, Python::tab($level) . 'def f_' . $label . chr(40) . 'v_self' . chr(41) . ':' );
-                        push( @{$List_s}, Python::tab(($level + 1)) . 'return v_self.v_' . $decl->arguments()->[0]->var()->name() );
-                        push( @{$List_s}, Python::tab($level) . 'self.__dict__.update' . chr(40) . chr(123) . chr(39) . 'f_' . $decl->arguments()->[0]->var()->name() . chr(39) . ':f_' . $label . chr(125) . chr(41) )
+                    if ((((Main::isa($decl, 'Apply') && ($decl->code() eq 'infix:<' . chr(61) . '>')) && Main::isa($decl->arguments()->[0], 'Decl')) && ($decl->arguments()->[0]->decl() eq 'has'))) {
+                        ((my  $label) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+                        push( @{$List_s}, (Python::tab($level) . 'def f_' . $label . '(v_self):') );
+                        push( @{$List_s}, (Python::tab(($level + 1)) . 'return v_self.v_' . $decl->arguments()->[0]->var()->name()) );
+                        push( @{$List_s}, (Python::tab($level) . ('self.__dict__.update(' . chr(123) . chr(39) . 'f_') . $decl->arguments()->[0]->var()->name() . (chr(39) . ':f_') . $label . (chr(125) . ')')) )
                     }
                 }
             };
-            for my $decl ( @{(($block) || []) || []} ) {
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my'))))) {
-                    push( @{$List_s}, Python::tab($level) . ($decl->var())->emit_python_name() . ' ' . chr(61) . ' ' . $decl->emit_python_init() . '' )
+            for my $decl ( @{(($block))} ) {
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my')))) {
+                    push( @{$List_s}, (Python::tab($level) . ($decl->var())->emit_python_name() . ' ' . chr(61) . ' ' . $decl->emit_python_init() . '') )
                 }
                 else {
-                    if (Main::bool((((Main::isa($decl, 'Apply') && ($decl->code() eq 'infix:' . chr(60) . chr(61) . chr(62))) && Main::isa($decl->arguments()->[0], 'Decl')) && ($decl->arguments()->[0]->decl() eq 'my')))) {
-                        push( @{$List_s}, Python::tab($level) . $decl->arguments()->[0]->var()->emit_python_name() . ' ' . chr(61) . ' ' . $decl->arguments()->[0]->emit_python_init() . '' )
+                    if ((((Main::isa($decl, 'Apply') && ($decl->code() eq 'infix:<' . chr(61) . '>')) && Main::isa($decl->arguments()->[0], 'Decl')) && ($decl->arguments()->[0]->decl() eq 'my'))) {
+                        push( @{$List_s}, (Python::tab($level) . $decl->arguments()->[0]->var()->emit_python_name() . ' ' . chr(61) . ' ' . $decl->arguments()->[0]->emit_python_init() . '') )
                     }
                 }
             };
-            (my  $last_statement = undef);
-            if (Main::bool($self->{needs_return})) {
-                ($last_statement = pop( @{(($block) || [])} ))
+            (my  $last_statement);
+            if ($self->{needs_return}) {
+                ($last_statement = pop( @{(($block))} ))
             };
-            for my $stmt ( @{(($block) || []) || []} ) {
+            for my $stmt ( @{(($block))} ) {
                 ($List_anon_block = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-                ((my  $s2 = undef) = $stmt->emit_python_indented($level));
-                for my $stmt ( @{$List_anon_block || []} ) {
+                ((my  $s2) = $stmt->emit_python_indented($level));
+                for my $stmt ( @{$List_anon_block} ) {
                     push( @{$List_s}, $stmt->emit_python_indented($level) )
                 };
                 push( @{$List_s}, $s2 )
             };
-            if (Main::bool(($self->{needs_return} && $last_statement))) {
+            if (($self->{needs_return} && $last_statement)) {
                 ($List_anon_block = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-                (my  $s2 = undef);
-                if (Main::bool(Main::isa($last_statement, 'If'))) {
-                    ((my  $cond = undef) = $last_statement->cond());
-                    ((my  $has_otherwise = undef) = (Main::bool($last_statement->otherwise()) ? 1 : 0));
-                    ($s2 = Python::tab($level) . 'if mp6_to_bool' . chr(40) . $cond->emit_python() . chr(41) . ':' . chr(10));
-                    ((my  $body_block = undef) = Perlito::Python::LexicalBlock->new(('block' => ($last_statement->body()->stmts())), ('needs_return' => 1)));
-                    if (Main::bool($body_block->has_my_decl())) {
+                (my  $s2);
+                if (Main::isa($last_statement, 'If')) {
+                    ((my  $cond) = $last_statement->cond());
+                    ((my  $has_otherwise) = ($last_statement->otherwise() ? 1 : 0));
+                    ($s2 = (Python::tab($level) . 'if mp6_to_bool(' . $cond->emit_python() . ('):' . chr(10))));
+                    ((my  $body_block) = Perlito::Python::LexicalBlock->new(('block' => ($last_statement->body()->stmts())), ('needs_return' => 1)));
+                    if ($body_block->has_my_decl()) {
                         ($body_block = Do->new(('block' => ($last_statement->body()))));
-                        ($s2 = $s2 . Python::tab(($level + 1)) . 'return ' . $body_block->emit_python())
+                        ($s2 = ($s2 . Python::tab(($level + 1)) . 'return ' . $body_block->emit_python()))
                     }
                     else {
-                        ($s2 = $s2 . $body_block->emit_python_indented(($level + 1)))
+                        ($s2 = ($s2 . $body_block->emit_python_indented(($level + 1))))
                     };
-                    if (Main::bool(($has_otherwise))) {
-                        ($s2 = $s2 . chr(10) . Python::tab($level) . 'else:' . chr(10));
-                        ((my  $otherwise_block = undef) = Perlito::Python::LexicalBlock->new(('block' => ($last_statement->otherwise()->stmts())), ('needs_return' => 1)));
-                        if (Main::bool($otherwise_block->has_my_decl())) {
+                    if (($has_otherwise)) {
+                        ($s2 = ($s2 . (chr(10)) . Python::tab($level) . ('else:' . chr(10))));
+                        ((my  $otherwise_block) = Perlito::Python::LexicalBlock->new(('block' => ($last_statement->otherwise()->stmts())), ('needs_return' => 1)));
+                        if ($otherwise_block->has_my_decl()) {
                             ($otherwise_block = Do->new(('block' => ($last_statement->otherwise()))));
-                            ($s2 = $s2 . Python::tab(($level + 1)) . 'return ' . $otherwise_block->emit_python())
+                            ($s2 = ($s2 . Python::tab(($level + 1)) . 'return ' . $otherwise_block->emit_python()))
                         }
                         else {
-                            ($s2 = $s2 . $otherwise_block->emit_python_indented(($level + 1)))
+                            ($s2 = ($s2 . $otherwise_block->emit_python_indented(($level + 1))))
                         }
                     }
                 }
                 else {
-                    if (Main::bool((Main::isa($last_statement, 'Apply') && ($last_statement->code() eq 'infix:' . chr(60) . chr(61) . chr(62))))) {
+                    if ((Main::isa($last_statement, 'Apply') && ($last_statement->code() eq 'infix:<' . chr(61) . '>'))) {
                         ($s2 = $last_statement->emit_python_indented($level));
-                        ($s2 = $s2 . chr(10) . Python::tab($level) . 'return ' . $last_statement->arguments()->[0]->emit_python())
+                        ($s2 = ($s2 . (chr(10)) . Python::tab($level) . ('return ') . $last_statement->arguments()->[0]->emit_python()))
                     }
                     else {
-                        if (Main::bool(((Main::isa($last_statement, 'Apply') && ($last_statement->code() eq 'return')) || Main::isa($last_statement, 'For')))) {
+                        if (((Main::isa($last_statement, 'Apply') && ($last_statement->code() eq 'return')) || Main::isa($last_statement, 'For'))) {
                             ($s2 = $last_statement->emit_python_indented($level))
                         }
                         else {
-                            ($s2 = Python::tab($level) . 'return ' . $last_statement->emit_python())
+                            ($s2 = (Python::tab($level) . ('return ') . $last_statement->emit_python()))
                         }
                     }
                 };
-                for my $stmt ( @{$List_anon_block || []} ) {
+                for my $stmt ( @{$List_anon_block} ) {
                     push( @{$List_s}, $stmt->emit_python_indented($level) )
                 };
                 push( @{$List_s}, $s2 )
             };
             ($List_anon_block = $List_tmp);
-            return scalar (Main::join($List_s, chr(10)))
+            return scalar (Main::join($List_s, (chr(10))))
         }
     }
 
@@ -285,55 +288,55 @@ $self->emit_python_indented(0)
         sub body { $_[0]->{body} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            (my  $List_s = []);
-            ((my  $block = undef) = Perlito::Python::LexicalBlock->new(('block' => $self->{body})));
-            ((my  $label = undef) = '_anon_' . Perlito::Python::LexicalBlock::get_ident_python());
-            ((my  $name = undef) = Main::to_go_namespace($self->{name}));
-            for my $decl ( @{$self->{body} || []} ) {
-                if (Main::bool(Main::isa($decl, 'Use'))) {
-                    if (Main::bool(($decl->mod() ne 'v6'))) {
-                        push( @{$List_s}, Python::tab($level) . 'import ' . Main::to_go_namespace($decl->mod()) )
+            (my  $List_s = bless [], 'ARRAY');
+            ((my  $block) = Perlito::Python::LexicalBlock->new(('block' => $self->{body})));
+            ((my  $label) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+            ((my  $name) = Main::to_go_namespace($self->{name}));
+            for my $decl ( @{$self->{body}} ) {
+                if (Main::isa($decl, 'Use')) {
+                    if (($decl->mod() ne 'v6')) {
+                        push( @{$List_s}, (Python::tab($level) . 'import ' . Main::to_go_namespace($decl->mod())) )
                     }
                 }
             };
-            push( @{$List_s}, Python::tab($level) . 'try:' );
-            push( @{$List_s}, Python::tab(($level + 1)) . 'type' . chr(40) . $name . chr(41) );
-            push( @{$List_s}, Python::tab($level) . 'except NameError:' );
-            push( @{$List_s}, Python::tab(($level + 1)) . 'class ' . $name . ':' );
-            push( @{$List_s}, Python::tab(($level + 2)) . 'def __init__' . chr(40) . 'self, **arg' . chr(41) . ':' );
-            push( @{$List_s}, Python::tab(($level + 3)) . 'for k in arg:' );
-            push( @{$List_s}, Python::tab(($level + 4)) . 'self.__dict__' . chr(91) . 'k' . chr(93) . ' ' . chr(61) . ' mp6_Scalar' . chr(40) . chr(41) );
-            push( @{$List_s}, Python::tab(($level + 4)) . 'self.__dict__' . chr(91) . 'k' . chr(93) . '.f_set' . chr(40) . 'arg' . chr(91) . 'k' . chr(93) . chr(41) );
-            push( @{$List_s}, Python::tab(($level + 2)) . 'def f__setattr__' . chr(40) . 'self, k, v' . chr(41) . ':' );
-            push( @{$List_s}, Python::tab(($level + 3)) . 'return self.__dict__' . chr(91) . 'k' . chr(93) . '.f_set' . chr(40) . 'v' . chr(41) );
-            push( @{$List_s}, Python::tab(($level + 2)) . 'def f_isa' . chr(40) . 'self, name' . chr(41) . ':' );
-            push( @{$List_s}, Python::tab(($level + 3)) . 'return name ' . chr(61) . chr(61) . ' u' . chr(39) . $self->{name} . chr(39) );
-            push( @{$List_s}, Python::tab(($level + 2)) . 'def f_bool' . chr(40) . 'self' . chr(41) . ':' );
-            push( @{$List_s}, Python::tab(($level + 3)) . 'return 1' );
-            push( @{$List_s}, Python::tab(($level + 2)) . 'def __getattr__' . chr(40) . 'self, attr' . chr(41) . ':' );
-            push( @{$List_s}, Python::tab(($level + 3)) . 'if attr' . chr(91) . '0:2' . chr(93) . ' ' . chr(61) . chr(61) . ' u' . chr(39) . 'v_' . chr(39) . ':' );
-            push( @{$List_s}, Python::tab(($level + 4)) . 'self.__dict__' . chr(91) . 'attr' . chr(93) . ' ' . chr(61) . ' mp6_Scalar' . chr(40) . chr(41) );
-            push( @{$List_s}, Python::tab(($level + 4)) . 'return self.__dict__' . chr(91) . 'attr' . chr(93) );
-            push( @{$List_s}, Python::tab(($level + 3)) . 'raise AttributeError' . chr(40) . 'attr' . chr(41) );
-            push( @{$List_s}, Python::tab(($level + 1)) . $name . '_proto ' . chr(61) . ' ' . $name . chr(40) . chr(41) );
-            push( @{$List_s}, Python::tab(($level + 1)) . '__builtin__.' . $name . ' ' . chr(61) . ' ' . $name . '' );
-            push( @{$List_s}, Python::tab(($level + 1)) . '__builtin__.' . $name . '_proto ' . chr(61) . ' ' . $name . '_proto' );
-            if (Main::bool(($name eq 'GLOBAL'))) {
-                push( @{$List_s}, Python::tab($level) . 'self ' . chr(61) . ' ' . $name );
+            push( @{$List_s}, (Python::tab($level) . 'try:') );
+            push( @{$List_s}, (Python::tab(($level + 1)) . 'type(' . $name . (')')) );
+            push( @{$List_s}, (Python::tab($level) . 'except NameError:') );
+            push( @{$List_s}, (Python::tab(($level + 1)) . 'class ' . $name . (':')) );
+            push( @{$List_s}, (Python::tab(($level + 2)) . ('def __init__(self, **arg):')) );
+            push( @{$List_s}, (Python::tab(($level + 3)) . ('for k in arg:')) );
+            push( @{$List_s}, (Python::tab(($level + 4)) . ('self.__dict__[k] ' . chr(61) . ' mp6_Scalar()')) );
+            push( @{$List_s}, (Python::tab(($level + 4)) . ('self.__dict__[k].f_set(arg[k])')) );
+            push( @{$List_s}, (Python::tab(($level + 2)) . ('def f__setattr__(self, k, v):')) );
+            push( @{$List_s}, (Python::tab(($level + 3)) . ('return self.__dict__[k].f_set(v)')) );
+            push( @{$List_s}, (Python::tab(($level + 2)) . ('def f_isa(self, name):')) );
+            push( @{$List_s}, (Python::tab(($level + 3)) . ('return name ' . chr(61) . chr(61) . ' u' . chr(39)) . $self->{name} . (chr(39))) );
+            push( @{$List_s}, (Python::tab(($level + 2)) . ('def f_bool(self):')) );
+            push( @{$List_s}, (Python::tab(($level + 3)) . ('return 1')) );
+            push( @{$List_s}, (Python::tab(($level + 2)) . ('def __getattr__(self, attr):')) );
+            push( @{$List_s}, (Python::tab(($level + 3)) . ('if attr[0:2] ' . chr(61) . chr(61) . ' u' . chr(39) . 'v_' . chr(39) . ':')) );
+            push( @{$List_s}, (Python::tab(($level + 4)) . ('self.__dict__[attr] ' . chr(61) . ' mp6_Scalar()')) );
+            push( @{$List_s}, (Python::tab(($level + 4)) . ('return self.__dict__[attr]')) );
+            push( @{$List_s}, (Python::tab(($level + 3)) . ('raise AttributeError(attr)')) );
+            push( @{$List_s}, (Python::tab(($level + 1)) . $name . ('_proto ' . chr(61) . ' ') . $name . ('()')) );
+            push( @{$List_s}, (Python::tab(($level + 1)) . ('__builtin__.') . $name . (' ' . chr(61) . ' ') . $name . '') );
+            push( @{$List_s}, (Python::tab(($level + 1)) . ('__builtin__.') . $name . ('_proto ' . chr(61) . ' ') . $name . ('_proto')) );
+            if (($name eq 'GLOBAL')) {
+                push( @{$List_s}, (Python::tab($level) . 'self ' . chr(61) . ' ' . $name) );
                 push( @{$List_s}, $block->emit_python_indented($level) )
             }
             else {
-                push( @{$List_s}, Python::tab($level) . 'def ' . $label . chr(40) . chr(41) . ':' );
-                push( @{$List_s}, Python::tab(($level + 1)) . 'self ' . chr(61) . ' ' . $name );
+                push( @{$List_s}, (Python::tab($level) . 'def ' . $label . ('():')) );
+                push( @{$List_s}, (Python::tab(($level + 1)) . 'self ' . chr(61) . ' ' . $name) );
                 push( @{$List_s}, $block->emit_python_indented(($level + 1)) );
-                push( @{$List_s}, Python::tab($level) . $label . chr(40) . chr(41) )
+                push( @{$List_s}, (Python::tab($level) . $label . ('()')) )
             };
-            return scalar (Main::join($List_s, chr(10)))
+            return scalar (Main::join($List_s, (chr(10))))
         }
     }
 
@@ -349,7 +352,7 @@ $self->emit_python_indented(0)
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            Python::tab($level) . $self->{int}
+            (Python::tab($level) . $self->{int})
         }
     }
 
@@ -365,7 +368,7 @@ $self->emit_python_indented(0)
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            Python::tab($level) . $self->{bit}
+            (Python::tab($level) . $self->{bit})
         }
     }
 
@@ -381,7 +384,7 @@ $self->emit_python_indented(0)
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            Python::tab($level) . $self->{num}
+            (Python::tab($level) . $self->{num})
         }
     }
 
@@ -392,12 +395,41 @@ $self->emit_python_indented(0)
         sub buf { $_[0]->{buf} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            Python::tab($level) . Python::escape_string($self->{buf})
+            (Python::tab($level) . Python::escape_string($self->{buf}))
+        }
+    }
+
+;
+    {
+    package Lit::Block;
+        sub new { shift; bless { @_ }, "Lit::Block" }
+        sub sig { $_[0]->{sig} };
+        sub stmts { $_[0]->{stmts} };
+        sub emit_python {
+            my $self = $_[0];
+            $self->emit_python_indented(0)
+        };
+        sub emit_python_indented {
+            my $self = $_[0];
+            my $level = $_[1];
+            ((my  $label) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+            ((my  $anon_var) = ($self->{sig} || Var->new(('name' => '_'), ('namespace' => ''), ('sigil' => chr(36)), ('twigil' => ''))));
+            ((my  $anon_sig) = Sig->new(('invocant' => undef()), ('positional' => do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
+    push( @{$List_a}, $anon_var );
+    $List_a
+}), ('named' => do {
+    (my  $Hash_a = bless {}, 'HASH');
+    $Hash_a
+})));
+            Perlito::Python::LexicalBlock::push_stmt_python(Perlito::Python::AnonSub->new(('name' => $label), ('block' => $self->{stmts}), ('sig' => $anon_sig), ('handles_return_exception' => 0)));
+            return scalar ((Python::tab($level) . ('f_') . $label . ''))
         }
     }
 
@@ -408,12 +440,12 @@ $self->emit_python_indented(0)
         sub array1 { $_[0]->{array1} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $ast = undef) = $self->expand_interpolation());
+            ((my  $ast) = $self->expand_interpolation());
             return scalar ($ast->emit_python_indented($level))
         }
     }
@@ -425,12 +457,12 @@ $self->emit_python_indented(0)
         sub hash1 { $_[0]->{hash1} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $ast = undef) = $self->expand_interpolation());
+            ((my  $ast) = $self->expand_interpolation());
             return scalar ($ast->emit_python_indented($level))
         }
     }
@@ -443,12 +475,12 @@ $self->emit_python_indented(0)
         sub index_exp { $_[0]->{index_exp} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            Python::tab($level) . $self->{obj}->emit_python() . '.f_index' . chr(40) . $self->{index_exp}->emit_python() . chr(41)
+            (Python::tab($level) . $self->{obj}->emit_python() . '.f_index(' . $self->{index_exp}->emit_python() . ')')
         }
     }
 
@@ -460,12 +492,12 @@ $self->emit_python_indented(0)
         sub index_exp { $_[0]->{index_exp} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            Python::tab($level) . $self->{obj}->emit_python() . '.f_lookup' . chr(40) . $self->{index_exp}->emit_python() . chr(41)
+            (Python::tab($level) . $self->{obj}->emit_python() . '.f_lookup(' . $self->{index_exp}->emit_python() . ')')
         }
     }
 
@@ -476,8 +508,8 @@ $self->emit_python_indented(0)
         sub sigil { $_[0]->{sigil} };
         sub twigil { $_[0]->{twigil} };
         sub name { $_[0]->{name} };
-        ((my  $table = undef) = do {
-    (my  $Hash_a = {});
+        ((my  $table) = do {
+    (my  $Hash_a = bless {}, 'HASH');
     ($Hash_a->{chr(36)} = 'v_');
     ($Hash_a->{chr(64)} = 'List_');
     ($Hash_a->{chr(37)} = 'Hash_');
@@ -486,16 +518,16 @@ $self->emit_python_indented(0)
 });
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            return scalar (Python::tab($level) . ((Main::bool((($self->{twigil} eq '.'))) ? ('v_self.v_' . $self->{name} . '') : ((Main::bool((($self->{name} eq chr(47)))) ? ($table->{$self->{sigil}} . 'MATCH') : ($table->{$self->{sigil}} . $self->{name} . ''))))))
+            return scalar ((Python::tab($level) . (((($self->{twigil} eq '.')) ? (('v_self.v_' . $self->{name} . '')) : (((($self->{name} eq chr(47))) ? (($table->{$self->{sigil}} . 'MATCH')) : (($table->{$self->{sigil}} . $self->{name} . ''))))))))
         };
         sub emit_python_name {
             my $self = $_[0];
-            return scalar (((Main::bool((($self->{twigil} eq '.'))) ? ('v_self.v_' . $self->{name}) : ((Main::bool((($self->{name} eq chr(47)))) ? ($table->{$self->{sigil}} . 'MATCH') : ($table->{$self->{sigil}} . $self->{name}))))))
+            return scalar ((((($self->{twigil} eq '.')) ? (('v_self.v_' . $self->{name})) : (((($self->{name} eq chr(47))) ? (($table->{$self->{sigil}} . 'MATCH')) : (($table->{$self->{sigil}} . $self->{name})))))))
         }
     }
 
@@ -506,15 +538,15 @@ $self->emit_python_indented(0)
         sub name { $_[0]->{name} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            if (Main::bool(($self->{name} eq 'self'))) {
-                return scalar (Python::tab($level) . 'v_self')
+            if (($self->{name} eq 'self')) {
+                return scalar ((Python::tab($level) . 'v_self'))
             };
-            Python::tab($level) . Main::to_go_namespace($self->{name}) . '_proto'
+            (Python::tab($level) . Main::to_go_namespace($self->{name}) . '_proto')
         }
     }
 
@@ -526,50 +558,60 @@ $self->emit_python_indented(0)
         sub hyper { $_[0]->{hyper} };
         sub method { $_[0]->{method} };
         sub arguments { $_[0]->{arguments} };
+        ((my  $Hash_method_python = bless {}, 'HASH') = do {
+    (my  $Hash_a = bless {}, 'HASH');
+    ($Hash_a->{'id'} = 'id');
+    ($Hash_a->{'yaml'} = 'yaml');
+    ($Hash_a->{'join'} = 'join');
+    ($Hash_a->{'split'} = 'split');
+    ($Hash_a->{'isa'} = 'isa');
+    ($Hash_a->{'say'} = 'say');
+    $Hash_a
+});
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $invocant = undef) = $self->{invocant}->emit_python());
-            if (Main::bool(($self->{method} eq 'new'))) {
-                (my  $List_str = []);
-                for my $field ( @{$self->{arguments} || []} ) {
-                    if (Main::bool((Main::isa($field, 'Apply') && ($field->code() eq 'infix:' . chr(60) . chr(61) . chr(62) . chr(62))))) {
-                        push( @{$List_str}, 'v_' . $field->arguments()->[0]->buf() . chr(61) . $field->arguments()->[1]->emit_python() )
+            ((my  $invocant) = $self->{invocant}->emit_python());
+            if (($self->{method} eq 'new')) {
+                (my  $List_str = bless [], 'ARRAY');
+                for my $field ( @{$self->{arguments}} ) {
+                    if ((Main::isa($field, 'Apply') && ($field->code() eq 'infix:<' . chr(61) . '>>'))) {
+                        push( @{$List_str}, ('v_' . $field->arguments()->[0]->buf() . chr(61) . $field->arguments()->[1]->emit_python()) )
                     }
                     else {
                         die('Error in constructor, field: ', Main::perl($field, ))
                     }
                 };
-                return scalar (Python::tab($level) . '__builtin__.' . Main::to_go_namespace($self->{invocant}->name()) . chr(40) . Main::join($List_str, ', ') . chr(41))
+                return scalar ((Python::tab($level) . '__builtin__.' . Main::to_go_namespace($self->{invocant}->name()) . '(' . Main::join($List_str, ', ') . ')'))
             };
-            if (Main::bool((((((($self->{method} eq 'id')) || (($self->{method} eq 'yaml'))) || (($self->{method} eq 'join'))) || (($self->{method} eq 'split'))) || (($self->{method} eq 'isa'))))) {
-                if (Main::bool(($self->{hyper}))) {
-                    return scalar (Python::tab($level) . 'f_map' . chr(40) . $invocant . ', lambda x: Main.' . $self->{method} . chr(40) . 'x, ' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41) . chr(41))
+            if (exists($Hash_method_python->{$self->{method}})) {
+                if (($self->{hyper})) {
+                    return scalar ((Python::tab($level) . 'f_map(' . $invocant . ', lambda x: Main.' . $self->{method} . '(x, ' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . '))'))
                 }
                 else {
-                    return scalar (Python::tab($level) . 'mp6_' . $self->{method} . chr(40) . $invocant . ', ' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+                    return scalar ((Python::tab($level) . ('f_') . $self->{method} . '(' . $invocant . ', ' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')'))
                 }
             };
-            ((my  $meth = undef) = $self->{method});
-            if (Main::bool(($meth eq 'postcircumfix:' . chr(60) . chr(40) . ' ' . chr(41) . chr(62)))) {
-                return scalar (Python::tab($level) . $invocant . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            ((my  $meth) = $self->{method});
+            if (($meth eq 'postcircumfix:<( )>')) {
+                return scalar ((Python::tab($level) . $invocant . '(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(((($meth eq 'values')) || (($meth eq 'keys'))))) {
-                return scalar (Python::tab($level) . $invocant . '.' . $meth . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (((($meth eq 'values')) || (($meth eq 'keys')))) {
+                return scalar ((Python::tab($level) . $invocant . '.' . $meth . '(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($meth eq 'chars'))) {
-                return scalar (Python::tab($level) . 'len' . chr(40) . $invocant . chr(41))
+            if (($meth eq 'chars')) {
+                return scalar ((Python::tab($level) . ('len(') . $invocant . (')')))
             };
-            ((my  $call = undef) = 'f_' . $meth . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41));
-            if (Main::bool(($self->{hyper}))) {
-                return scalar (Python::tab($level) . 'f_map' . chr(40) . $invocant . ', lambda x: x.' . $call . chr(41))
+            ((my  $call) = ('f_' . $meth . '(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')'));
+            if (($self->{hyper})) {
+                return scalar ((Python::tab($level) . 'f_map(' . $invocant . ', lambda x: x.' . $call . ')'))
             }
             else {
-                return scalar (Python::tab($level) . $invocant . '.' . $call)
+                return scalar ((Python::tab($level) . $invocant . '.' . $call))
             }
         }
     }
@@ -583,222 +625,229 @@ $self->emit_python_indented(0)
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            Python::tab($level) . $self->emit_python()
+            (Python::tab($level) . $self->emit_python())
         };
         sub emit_python {
             my $self = $_[0];
-            ((my  $code = undef) = $self->{code});
-            if (Main::bool(Main::isa(($self->{arguments}->[0]), 'Apply'))) {
-                ((my  $args2 = undef) = $self->{arguments}->[0]->arguments());
-                if (Main::bool((Main::isa(($args2->[0]), 'Apply') && ((($args2->[0]->code() eq 'infix:' . chr(60) . 'or' . chr(62)) || ($args2->[0]->code() eq 'infix:' . chr(60) . chr(124) . chr(124) . chr(62))))))) {
+            ((my  $apply) = $self->op_assign());
+            if ($apply) {
+                return scalar ($apply->emit_python())
+            };
+            ((my  $code) = $self->{code});
+            if (Main::isa(($self->{arguments}->[0]), 'Apply')) {
+                ((my  $args2) = $self->{arguments}->[0]->arguments());
+                if ((Main::isa(($args2->[0]), 'Apply') && ((($args2->[0]->code() eq 'infix:<or>') || ($args2->[0]->code() eq 'infix:<' . chr(124) . chr(124) . '>'))))) {
                     ($args2->[0] = Do->new(('block' => $args2->[0])))
                 }
             };
-            if (Main::bool(Main::isa(($self->{arguments}->[0]), 'Apply'))) {
-                ((my  $args2 = undef) = $self->{arguments}->[0]->arguments());
-                if (Main::bool((Main::isa(($args2->[1]), 'Apply') && ($args2->[1]->code() ne 'infix:' . chr(60) . chr(61) . chr(62) . chr(62))))) {
+            if (Main::isa(($self->{arguments}->[0]), 'Apply')) {
+                ((my  $args2) = $self->{arguments}->[0]->arguments());
+                if ((Main::isa(($args2->[1]), 'Apply') && ($args2->[1]->code() ne 'infix:<' . chr(61) . '>>'))) {
                     ($args2->[1] = Do->new(('block' => $args2->[1])))
                 }
             };
-            if (Main::bool(Main::isa(($self->{arguments}->[1]), 'Apply'))) {
-                ((my  $args2 = undef) = $self->{arguments}->[1]->arguments());
-                if (Main::bool((Main::isa(($args2->[1]), 'Apply') && ($args2->[1]->code() ne 'infix:' . chr(60) . chr(61) . chr(62) . chr(62))))) {
+            if (Main::isa(($self->{arguments}->[1]), 'Apply')) {
+                ((my  $args2) = $self->{arguments}->[1]->arguments());
+                if ((Main::isa(($args2->[1]), 'Apply') && ($args2->[1]->code() ne 'infix:<' . chr(61) . '>>'))) {
                     ($args2->[1] = Do->new(('block' => $args2->[1])))
                 }
             };
-            if (Main::bool(Main::isa($code, 'Str'))) {
+            if (Main::isa($code, 'Str')) {
 
             }
             else {
-                return scalar (chr(40) . $self->{code}->emit_python() . chr(41) . '.' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+                return scalar (('(' . $self->{code}->emit_python() . ').(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'self'))) {
+            if (($code eq 'self')) {
                 return scalar ('v_self')
             };
-            if (Main::bool(($code eq 'Mu'))) {
-                return scalar ('mp6_Mu' . chr(40) . chr(41))
+            if (($code eq 'Mu')) {
+                return scalar ('mp6_Mu()')
             };
-            if (Main::bool(($code eq 'make'))) {
-                return scalar ('v_MATCH.f__setattr__' . chr(40) . chr(39) . 'v_capture' . chr(39) . ', ' . ($self->{arguments}->[0])->emit_python() . chr(41))
+            if (($code eq 'make')) {
+                return scalar (('v_MATCH.f__setattr__(' . chr(39) . 'v_capture' . chr(39) . ', ' . ($self->{arguments}->[0])->emit_python() . ')'))
             };
-            if (Main::bool(($code eq 'False'))) {
+            if (($code eq 'False')) {
                 return scalar ('False')
             };
-            if (Main::bool(($code eq 'True'))) {
+            if (($code eq 'True')) {
                 return scalar ('True')
             };
-            if (Main::bool(($code eq 'array'))) {
-                return scalar (chr(91) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . chr(93))
+            if (($code eq 'array')) {
+                return scalar (('[' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . ']'))
             };
-            if (Main::bool(($code eq 'Int'))) {
-                return scalar ('mp6_to_num' . chr(40) . ($self->{arguments}->[0])->emit_python(("" . chr(41))))
+            if (($code eq 'Int')) {
+                return scalar (('mp6_to_num(' . ($self->{arguments}->[0])->emit_python() . ')'))
             };
-            if (Main::bool(($code eq 'Num'))) {
-                return scalar ('mp6_to_num' . chr(40) . ($self->{arguments}->[0])->emit_python(("" . chr(41))))
+            if (($code eq 'Num')) {
+                return scalar (('mp6_to_num(' . ($self->{arguments}->[0])->emit_python() . ')'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(126) . chr(62)))) {
-                return scalar ('unicode' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . chr(41))
+            if (($code eq 'prefix:<' . chr(126) . '>')) {
+                return scalar (('unicode(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . ')'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(33) . chr(62)))) {
-                return scalar ('not mp6_to_bool' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . chr(41))
+            if (($code eq 'prefix:<' . chr(33) . '>')) {
+                return scalar (('not mp6_to_bool(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . ')'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(63) . chr(62)))) {
-                return scalar ('not ' . chr(40) . 'not mp6_to_bool' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . chr(41) . chr(41))
+            if (($code eq 'prefix:<' . chr(63) . '>')) {
+                return scalar (('not (not mp6_to_bool(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . '))'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(36) . chr(62)))) {
-                return scalar ('mp6_to_scalar' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . chr(41))
+            if (($code eq 'prefix:<' . chr(36) . '>')) {
+                return scalar (('mp6_to_scalar(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . ')'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(64) . chr(62)))) {
-                return scalar (chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . chr(41))
+            if (($code eq 'prefix:<' . chr(64) . '>')) {
+                return scalar (('(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . ')'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(37) . chr(62)))) {
-                return scalar (chr(37) . chr(123) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . chr(125))
+            if (($code eq 'prefix:<' . chr(37) . '>')) {
+                return scalar ((chr(37) . chr(123) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ') . chr(125)))
             };
-            if (Main::bool(($code eq 'list:' . chr(60) . chr(126) . chr(62)))) {
-                return scalar (chr(40) . 'unicode' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' + unicode' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<x>')) {
+                return scalar (('(unicode(' . $self->{arguments}->[0]->emit_python() . ')' . ' * mp6_to_num(' . $self->{arguments}->[1]->emit_python() . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . '+' . chr(62)))) {
-                return scalar (chr(40) . 'mp6_to_num' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' + mp6_to_num' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'list:<' . chr(126) . '>')) {
+                return scalar (('(unicode(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') + unicode(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . '-' . chr(62)))) {
-                return scalar (chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' - ') . chr(41))
+            if (($code eq 'infix:<+>')) {
+                return scalar (('(mp6_to_num(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') + mp6_to_num(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . '*' . chr(62)))) {
-                return scalar (chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' * ') . chr(41))
+            if (($code eq 'infix:<->')) {
+                return scalar (('(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' - ') . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(47) . chr(62)))) {
-                return scalar (chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ' . chr(47) . ' ') . chr(41))
+            if (($code eq 'infix:<*>')) {
+                return scalar (('(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' * ') . ')'))
             };
-            if (Main::bool((($code eq 'infix:' . chr(60) . chr(38) . chr(38) . chr(62)) || ($code eq 'infix:' . chr(60) . 'and' . chr(62))))) {
-                return scalar ('mp6_and' . chr(40) . ($self->{arguments}->[0])->emit_python() . ', lambda: ' . ($self->{arguments}->[1])->emit_python() . chr(41))
+            if (($code eq 'infix:<' . chr(47) . '>')) {
+                return scalar (('(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ' ' . chr(47) . ' ') . ')'))
             };
-            if (Main::bool((($code eq 'infix:' . chr(60) . chr(124) . chr(124) . chr(62)) || ($code eq 'infix:' . chr(60) . 'or' . chr(62))))) {
-                return scalar ('mp6_or' . chr(40) . ($self->{arguments}->[0])->emit_python() . ', lambda: ' . ($self->{arguments}->[1])->emit_python() . chr(41))
+            if ((($code eq 'infix:<' . chr(38) . chr(38) . '>') || ($code eq 'infix:<and>'))) {
+                return scalar (('mp6_and(' . ($self->{arguments}->[0])->emit_python() . ', lambda: ' . ($self->{arguments}->[1])->emit_python() . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(47) . chr(47) . chr(62)))) {
-                return scalar ('mp6_defined_or' . chr(40) . ($self->{arguments}->[0])->emit_python() . ', lambda: ' . ($self->{arguments}->[1])->emit_python() . chr(41))
+            if ((($code eq 'infix:<' . chr(124) . chr(124) . '>') || ($code eq 'infix:<or>'))) {
+                return scalar (('mp6_or(' . ($self->{arguments}->[0])->emit_python() . ', lambda: ' . ($self->{arguments}->[1])->emit_python() . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . 'eq' . chr(62)))) {
-                return scalar (chr(40) . 'unicode' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(61) . chr(61) . ' unicode' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<' . chr(47) . chr(47) . '>')) {
+                return scalar (('mp6_defined_or(' . ($self->{arguments}->[0])->emit_python() . ', lambda: ' . ($self->{arguments}->[1])->emit_python() . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . 'ne' . chr(62)))) {
-                return scalar (chr(40) . 'unicode' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(33) . chr(61) . ' unicode' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<eq>')) {
+                return scalar (('(unicode(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') ' . chr(61) . chr(61) . ' unicode(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . 'ge' . chr(62)))) {
-                return scalar (chr(40) . 'unicode' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(62) . chr(61) . ' unicode' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<ne>')) {
+                return scalar (('(unicode(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') ' . chr(33) . chr(61) . ' unicode(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . 'le' . chr(62)))) {
-                return scalar (chr(40) . 'unicode' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(60) . chr(61) . ' unicode' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<ge>')) {
+                return scalar (('(unicode(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') >' . chr(61) . ' unicode(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(61) . chr(61) . chr(62)))) {
-                return scalar (chr(40) . 'mp6_to_num' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(61) . chr(61) . ' mp6_to_num' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<le>')) {
+                return scalar (('(unicode(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') <' . chr(61) . ' unicode(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(33) . chr(61) . chr(62)))) {
-                return scalar (chr(40) . 'mp6_to_num' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(33) . chr(61) . ' mp6_to_num' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<' . chr(61) . chr(61) . '>')) {
+                return scalar (('(mp6_to_num(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') ' . chr(61) . chr(61) . ' mp6_to_num(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(60) . chr(62)))) {
-                return scalar (chr(40) . 'mp6_to_num' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(60) . ' mp6_to_num' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<' . chr(33) . chr(61) . '>')) {
+                return scalar (('(mp6_to_num(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') ' . chr(33) . chr(61) . ' mp6_to_num(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(62) . chr(62)))) {
-                return scalar (chr(40) . 'mp6_to_num' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(62) . ' mp6_to_num' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<<>')) {
+                return scalar (('(mp6_to_num(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') < mp6_to_num(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(60) . chr(61) . chr(62)))) {
-                return scalar (chr(40) . 'mp6_to_num' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(60) . chr(61) . ' mp6_to_num' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<>>')) {
+                return scalar (('(mp6_to_num(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') > mp6_to_num(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(62) . chr(61) . chr(62)))) {
-                return scalar (chr(40) . 'mp6_to_num' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), chr(41) . ' ' . chr(62) . chr(61) . ' mp6_to_num' . chr(40)) . chr(41) . chr(41))
+            if (($code eq 'infix:<<' . chr(61) . '>')) {
+                return scalar (('(mp6_to_num(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') <' . chr(61) . ' mp6_to_num(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . '..' . chr(62)))) {
-                return scalar ('range' . chr(40) . ($self->{arguments}->[0])->emit_python() . ', 1 + ' . ($self->{arguments}->[1])->emit_python() . chr(41))
+            if (($code eq 'infix:<>' . chr(61) . '>')) {
+                return scalar (('(mp6_to_num(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ') >' . chr(61) . ' mp6_to_num(') . '))'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(61) . chr(61) . chr(61) . chr(62)))) {
-                return scalar (chr(40) . 'mp6_id' . chr(40) . ($self->{arguments}->[0])->emit_python() . chr(41) . ' ' . chr(61) . chr(61) . ' mp6_id' . chr(40) . ($self->{arguments}->[1])->emit_python() . chr(41) . chr(41))
+            if (($code eq 'infix:<..>')) {
+                return scalar (('mp6_Array(range(' . ($self->{arguments}->[0])->emit_python() . ', 1 + ' . ($self->{arguments}->[1])->emit_python() . '))'))
             };
-            if (Main::bool(($code eq 'exists'))) {
-                ((my  $arg = undef) = $self->{arguments}->[0]);
-                if (Main::bool(Main::isa($arg, 'Lookup'))) {
-                    return scalar (chr(40) . ($arg->obj())->emit_python() . chr(41) . '.has_key' . chr(40) . ($arg->index_exp())->emit_python() . chr(41))
+            if (($code eq 'infix:<' . chr(61) . chr(61) . chr(61) . '>')) {
+                return scalar (('(f_id(' . ($self->{arguments}->[0])->emit_python() . ') ' . chr(61) . chr(61) . ' f_id(' . ($self->{arguments}->[1])->emit_python() . '))'))
+            };
+            if (($code eq 'exists')) {
+                ((my  $arg) = $self->{arguments}->[0]);
+                if (Main::isa($arg, 'Lookup')) {
+                    return scalar (('(' . ($arg->obj())->emit_python() . ').has_key(' . ($arg->index_exp())->emit_python() . ')'))
                 }
             };
-            if (Main::bool(($code eq 'ternary:' . chr(60) . chr(63) . chr(63) . ' ' . chr(33) . chr(33) . chr(62)))) {
-                ((my  $ast = undef) = Do->new(('block' => If->new(('cond' => ($self->{arguments}->[0])), ('body' => Lit::Block->new(('stmts' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            if (($code eq 'ternary:<' . chr(63) . chr(63) . ' ' . chr(33) . chr(33) . '>')) {
+                ((my  $ast) = Do->new(('block' => If->new(('cond' => ($self->{arguments}->[0])), ('body' => Lit::Block->new(('stmts' => do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $self->{arguments}->[1] );
     $List_a
 }))), ('otherwise' => Lit::Block->new(('stmts' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $self->{arguments}->[2] );
     $List_a
 })))))));
                 return scalar ($ast->emit_python())
             };
-            if (Main::bool(($code eq 'circumfix:' . chr(60) . chr(40) . ' ' . chr(41) . chr(62)))) {
-                return scalar (chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (($code eq 'circumfix:<( )>')) {
+                return scalar (('(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(61) . chr(62)))) {
+            if (($code eq 'infix:<' . chr(61) . '>')) {
                 return scalar (emit_python_bind($self->{arguments}->[0], $self->{arguments}->[1]))
             };
-            if (Main::bool(($code eq 'return'))) {
-                return scalar ('raise mp6_Return' . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (($code eq 'return')) {
+                return scalar (('raise mp6_Return(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'substr'))) {
-                return scalar (($self->{arguments}->[0])->emit_python() . chr(91) . 'mp6_to_num' . chr(40) . ($self->{arguments}->[1])->emit_python() . chr(41) . ':' . 'mp6_to_num' . chr(40) . ($self->{arguments}->[1])->emit_python() . chr(41) . ' ' . '+ mp6_to_num' . chr(40) . ($self->{arguments}->[2])->emit_python() . chr(41) . chr(93))
+            if (($code eq 'substr')) {
+                return scalar ((($self->{arguments}->[0])->emit_python() . '[' . 'mp6_to_num(' . ($self->{arguments}->[1])->emit_python() . ')' . ':' . 'mp6_to_num(' . ($self->{arguments}->[1])->emit_python() . ') ' . '+ mp6_to_num(' . ($self->{arguments}->[2])->emit_python() . ')' . ']'))
             };
-            if (Main::bool(($code eq 'index'))) {
-                return scalar ('mp6_index' . chr(40) . ($self->{arguments}->[0])->emit_python() . ', ' . ($self->{arguments}->[1])->emit_python() . chr(41))
+            if (($code eq 'index')) {
+                return scalar (('mp6_index(' . ($self->{arguments}->[0])->emit_python() . ', ' . ($self->{arguments}->[1])->emit_python() . ')'))
             };
-            if (Main::bool(($code eq 'defined'))) {
-                return scalar ('not mp6_isa' . chr(40) . ($self->{arguments}->[0])->emit_python() . ',' . chr(39) . 'Mu' . chr(39) . chr(41))
+            if (($code eq 'defined')) {
+                return scalar (('not f_isa(' . ($self->{arguments}->[0])->emit_python() . (',' . chr(39) . 'Mu' . chr(39) . ')')))
             };
-            if (Main::bool(($code eq 'shift'))) {
-                return scalar (($self->{arguments}->[0])->emit_python() . '.f_shift' . chr(40) . chr(41))
+            if (($code eq 'shift')) {
+                return scalar ((($self->{arguments}->[0])->emit_python() . '.f_shift()'))
             };
-            if (Main::bool(($code eq 'pop'))) {
-                return scalar (($self->{arguments}->[0])->emit_python() . '.f_pop' . chr(40) . chr(41))
+            if (($code eq 'pop')) {
+                return scalar ((($self->{arguments}->[0])->emit_python() . '.f_pop()'))
             };
-            if (Main::bool(($code eq 'push'))) {
-                return scalar (($self->{arguments}->[0])->emit_python() . '.f_push' . chr(40) . ($self->{arguments}->[1])->emit_python() . chr(41))
+            if (($code eq 'push')) {
+                return scalar ((($self->{arguments}->[0])->emit_python() . '.f_push(' . ($self->{arguments}->[1])->emit_python() . ')'))
             };
-            if (Main::bool(($code eq 'unshift'))) {
-                return scalar (($self->{arguments}->[0])->emit_python() . '.f_unshift' . chr(40) . ($self->{arguments}->[1])->emit_python() . chr(41))
+            if (($code eq 'unshift')) {
+                return scalar ((($self->{arguments}->[0])->emit_python() . '.f_unshift(' . ($self->{arguments}->[1])->emit_python() . ')'))
             };
-            if (Main::bool($self->{namespace})) {
-                return scalar (Main::to_go_namespace($self->{namespace}) . '_proto.f_' . $self->{code} . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if ($self->{namespace}) {
+                return scalar ((Main::to_go_namespace($self->{namespace}) . '_proto.f_' . $self->{code} . '(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            'f_' . $self->{code} . chr(40) . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . chr(41)
+            ('f_' . $self->{code} . '(' . Main::join(([ map { $_->emit_python() } @{( $self->{arguments} )} ]), ', ') . ')')
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            Python::tab($level) . $self->emit_python()
+            (Python::tab($level) . $self->emit_python())
         };
         sub emit_python_bind {
             my $parameters = $_[0];
             my $arguments = $_[1];
-            if (Main::bool(Main::isa($parameters, 'Call'))) {
-                return scalar (($parameters->invocant())->emit_python() . '.f__setattr__' . chr(40) . chr(39) . 'v_' . $parameters->method() . chr(39) . ', ' . $arguments->emit_python() . chr(41))
+            if (Main::isa($parameters, 'Call')) {
+                return scalar ((($parameters->invocant())->emit_python() . ('.f__setattr__(' . chr(39) . 'v_') . $parameters->method() . (chr(39) . ', ') . $arguments->emit_python() . (')')))
             };
-            if (Main::bool(((Main::isa($parameters, 'Var') && ($parameters->sigil() eq chr(64))) || (Main::isa($parameters, 'Decl') && ($parameters->var()->sigil() eq chr(64)))))) {
+            if (((Main::isa($parameters, 'Var') && ($parameters->sigil() eq chr(64))) || (Main::isa($parameters, 'Decl') && ($parameters->var()->sigil() eq chr(64))))) {
                 ($arguments = Lit::Array->new(('array1' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $arguments );
     $List_a
 })))
             }
             else {
-                if (Main::bool(((Main::isa($parameters, 'Var') && ($parameters->sigil() eq chr(37))) || (Main::isa($parameters, 'Decl') && ($parameters->var()->sigil() eq chr(37)))))) {
+                if (((Main::isa($parameters, 'Var') && ($parameters->sigil() eq chr(37))) || (Main::isa($parameters, 'Decl') && ($parameters->var()->sigil() eq chr(37))))) {
                     ($arguments = Lit::Hash->new(('hash1' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $arguments );
     $List_a
 })))
                 }
             };
-            return scalar ($parameters->emit_python() . '.f_set' . chr(40) . $arguments->emit_python() . chr(41))
+            return scalar (($parameters->emit_python() . '.f_set(' . $arguments->emit_python() . ')'))
         }
     }
 
@@ -811,24 +860,24 @@ $self->emit_python_indented(0)
         sub otherwise { $_[0]->{otherwise} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $has_body = undef) = (Main::bool(($self->{body} || [])) ? 1 : 0));
-            ((my  $has_otherwise = undef) = (Main::bool(($self->{otherwise} || [])) ? 1 : 0));
-            ((my  $body_block = undef) = Perlito::Python::LexicalBlock->new(('block' => $self->{body}->stmts())));
-            if (Main::bool($body_block->has_my_decl())) {
+            ((my  $has_body) = ($self->{body} ? 1 : 0));
+            ((my  $has_otherwise) = ($self->{otherwise} ? 1 : 0));
+            ((my  $body_block) = Perlito::Python::LexicalBlock->new(('block' => $self->{body}->stmts())));
+            if ($body_block->has_my_decl()) {
                 ($body_block = Do->new(('block' => $self->{body})))
             };
-            ((my  $s = undef) = Python::tab($level) . 'if mp6_to_bool' . chr(40) . $self->{cond}->emit_python() . chr(41) . ':' . chr(10) . $body_block->emit_python_indented(($level + 1)));
-            if (Main::bool(($has_otherwise))) {
-                ((my  $otherwise_block = undef) = Perlito::Python::LexicalBlock->new(('block' => $self->{otherwise}->stmts())));
-                if (Main::bool($otherwise_block->has_my_decl())) {
+            ((my  $s) = (Python::tab($level) . 'if mp6_to_bool(' . $self->{cond}->emit_python() . ('):' . chr(10)) . $body_block->emit_python_indented(($level + 1))));
+            if (($has_otherwise)) {
+                ((my  $otherwise_block) = Perlito::Python::LexicalBlock->new(('block' => $self->{otherwise}->stmts())));
+                if ($otherwise_block->has_my_decl()) {
                     ($otherwise_block = Do->new(('block' => $self->{otherwise})))
                 };
-                ($s = $s . chr(10) . Python::tab($level) . 'else:' . chr(10) . $otherwise_block->emit_python_indented(($level + 1)))
+                ($s = ($s . (chr(10)) . Python::tab($level) . ('else:' . chr(10)) . $otherwise_block->emit_python_indented(($level + 1))))
             };
             return scalar ($s)
         }
@@ -844,19 +893,19 @@ $self->emit_python_indented(0)
         sub body { $_[0]->{body} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $body_block = undef) = Perlito::Python::LexicalBlock->new(('block' => $self->{body}->stmts())));
-            if (Main::bool($body_block->has_my_decl())) {
+            ((my  $body_block) = Perlito::Python::LexicalBlock->new(('block' => $self->{body}->stmts())));
+            if ($body_block->has_my_decl()) {
                 ($body_block = Do->new(('block' => $self->{body})))
             };
-            if (Main::bool(($self->{init} && $self->{continue}))) {
-                die('not implemented ' . chr(40) . 'While' . chr(41))
+            if (($self->{init} && $self->{continue})) {
+                die(('not implemented (While)'))
             };
-            Python::tab($level) . 'while mp6_to_bool' . chr(40) . $self->{cond}->emit_python() . chr(41) . ':' . chr(10) . $body_block->emit_python_indented(($level + 1))
+            (Python::tab($level) . 'while mp6_to_bool(' . $self->{cond}->emit_python() . ('):' . chr(10)) . $body_block->emit_python_indented(($level + 1)))
         }
     }
 
@@ -868,32 +917,32 @@ $self->emit_python_indented(0)
         sub body { $_[0]->{body} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $body_block = undef) = Perlito::Python::LexicalBlock->new(('block' => $self->{body}->stmts())));
-            ((my  $sig = undef) = 'v__');
-            if (Main::bool($self->{body}->sig())) {
+            ((my  $body_block) = Perlito::Python::LexicalBlock->new(('block' => $self->{body}->stmts())));
+            ((my  $sig) = 'v__');
+            if ($self->{body}->sig()) {
                 ($sig = $self->{body}->sig()->emit_python_name())
             };
-            if (Main::bool($body_block->has_my_decl())) {
-                ((my  $label = undef) = '_anon_' . Perlito::Python::LexicalBlock::get_ident_python());
-                ((my  $anon_var = undef) = ($self->{body}->sig() || Var->new(('name' => '_'), ('namespace' => ''), ('sigil' => chr(36)), ('twigil' => ''))));
-                ((my  $anon_sig = undef) = Sig->new(('invocant' => undef), ('positional' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            if ($body_block->has_my_decl()) {
+                ((my  $label) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+                ((my  $anon_var) = ($self->{body}->sig() || Var->new(('name' => '_'), ('namespace' => ''), ('sigil' => chr(36)), ('twigil' => ''))));
+                ((my  $anon_sig) = Sig->new(('invocant' => undef()), ('positional' => do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $anon_var );
     $List_a
 }), ('named' => do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     $Hash_a
 })));
                 Perlito::Python::LexicalBlock::push_stmt_python(Perlito::Python::AnonSub->new(('name' => $label), ('block' => $self->{body}->stmts()), ('sig' => $anon_sig), ('handles_return_exception' => 0)));
-                return scalar (Python::tab($level) . 'for ' . $sig . ' in ' . $self->{cond}->emit_python() . ':' . chr(10) . Python::tab(($level + 1)) . 'f_' . $label . chr(40) . $sig . chr(41))
+                return scalar ((Python::tab($level) . 'for ' . $sig . (' in ') . $self->{cond}->emit_python() . (':' . chr(10)) . Python::tab(($level + 1)) . ('f_') . $label . ('(') . $sig . (')')))
             };
-            Python::tab($level) . 'for ' . $sig . ' in ' . $self->{cond}->emit_python() . ':' . chr(10) . $body_block->emit_python_indented(($level + 1))
+            (Python::tab($level) . 'for ' . $sig . (' in ') . $self->{cond}->emit_python() . (':' . chr(10)) . $body_block->emit_python_indented(($level + 1)))
         }
     }
 
@@ -906,26 +955,26 @@ $self->emit_python_indented(0)
         sub var { $_[0]->{var} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $decl = undef) = $self->{decl});
-            ((my  $name = undef) = $self->{var}->name());
-            Python::tab($level) . ((Main::bool((($decl eq 'has'))) ? ('') : $self->{var}->emit_python()))
+            ((my  $decl) = $self->{decl});
+            ((my  $name) = $self->{var}->name());
+            (Python::tab($level) . (((($decl eq 'has')) ? ('') : $self->{var}->emit_python())))
         };
         sub emit_python_init {
             my $self = $_[0];
-            if (Main::bool((($self->{var})->sigil() eq chr(37)))) {
-                return scalar ('mp6_Hash' . chr(40) . chr(123) . chr(125) . chr(41))
+            if ((($self->{var})->sigil() eq chr(37))) {
+                return scalar ('mp6_Hash(' . chr(123) . chr(125) . ')')
             }
             else {
-                if (Main::bool((($self->{var})->sigil() eq chr(64)))) {
-                    return scalar ('mp6_Array' . chr(40) . chr(91) . chr(93) . chr(41))
+                if ((($self->{var})->sigil() eq chr(64))) {
+                    return scalar ('mp6_Array([])')
                 }
                 else {
-                    return scalar ('mp6_Scalar' . chr(40) . chr(41))
+                    return scalar ('mp6_Scalar()')
                 }
             };
             return scalar ('')
@@ -954,46 +1003,46 @@ $self->emit_python_indented(0)
         sub block { $_[0]->{block} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $sig = undef) = $self->{sig});
-            ((my  $invocant = undef) = $sig->invocant());
-            ((my  $pos = undef) = $sig->positional());
-            ((my  $args = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $sig) = $self->{sig});
+            ((my  $invocant) = $sig->invocant());
+            ((my  $pos) = $sig->positional());
+            ((my  $args) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-            ((my  $default_args = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $default_args) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-            ((my  $meth_args = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $meth_args) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
             push( @{$meth_args}, $invocant->emit_python_name() );
-            for my $field ( @{($pos || []) || []} ) {
-                ((my  $arg = undef) = $field->emit_python_name());
+            for my $field ( @{($pos)} ) {
+                ((my  $arg) = $field->emit_python_name());
                 push( @{$args}, $arg );
-                push( @{$default_args}, $arg . chr(61) . 'mp6_Scalar' . chr(40) . chr(41) );
-                push( @{$meth_args}, $arg . chr(61) . 'mp6_Scalar' . chr(40) . chr(41) )
+                push( @{$default_args}, ($arg . chr(61) . 'mp6_Scalar()') );
+                push( @{$meth_args}, ($arg . chr(61) . 'mp6_Scalar()') )
             };
-            ((my  $label = undef) = '_anon_' . Perlito::Python::LexicalBlock::get_ident_python());
-            ((my  $block = undef) = Perlito::Python::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1)));
-            (my  $List_s = []);
-            push( @{$List_s}, Python::tab($level) . 'def f_' . $label . chr(40) . Main::join($meth_args, ', ') . chr(41) . ':' );
-            push( @{$List_s}, Python::tab(($level + 1)) . 'try:' );
+            ((my  $label) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+            ((my  $block) = Perlito::Python::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1)));
+            (my  $List_s = bless [], 'ARRAY');
+            push( @{$List_s}, (Python::tab($level) . 'def f_' . $label . ('(') . Main::join($meth_args, (', ')) . ('):')) );
+            push( @{$List_s}, (Python::tab(($level + 1)) . ('try:')) );
             push( @{$List_s}, $block->emit_python_indented(($level + 2)) );
-            push( @{$List_s}, Python::tab(($level + 1)) . 'except mp6_Return, r:' );
-            push( @{$List_s}, Python::tab(($level + 2)) . 'return r.value' );
-            push( @{$List_s}, Python::tab($level) . 'self.__dict__.update' . chr(40) . chr(123) . chr(39) . 'f_' . $self->{name} . chr(39) . ':f_' . $label . chr(125) . chr(41) );
-            return scalar (Main::join($List_s, chr(10)))
+            push( @{$List_s}, (Python::tab(($level + 1)) . ('except mp6_Return, r:')) );
+            push( @{$List_s}, (Python::tab(($level + 2)) . ('return r.value')) );
+            push( @{$List_s}, (Python::tab($level) . ('self.__dict__.update(' . chr(123) . chr(39) . 'f_') . $self->{name} . (chr(39) . ':f_') . $label . (chr(125) . ')')) );
+            return scalar (Main::join($List_s, (chr(10))))
         }
     }
 
@@ -1006,54 +1055,54 @@ $self->emit_python_indented(0)
         sub block { $_[0]->{block} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $label = undef) = '_anon_' . Perlito::Python::LexicalBlock::get_ident_python());
-            if (Main::bool((($self->{name} eq '')))) {
+            ((my  $label) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+            if ((($self->{name} eq ''))) {
                 Perlito::Python::LexicalBlock::push_stmt_python(Perlito::Python::AnonSub->new(('name' => $label), ('block' => $self->{block}), ('sig' => $self->{sig}), ('handles_return_exception' => 1)));
-                return scalar (Python::tab($level) . 'f_' . $label)
+                return scalar ((Python::tab($level) . 'f_' . $label))
             };
-            ((my  $sig = undef) = $self->{sig});
-            ((my  $pos = undef) = $sig->positional());
-            ((my  $args = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $sig) = $self->{sig});
+            ((my  $pos) = $sig->positional());
+            ((my  $args) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-            ((my  $default_args = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $default_args) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 });
-            ((my  $meth_args = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $meth_args) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, 'self' );
     $List_a
 });
-            for my $field ( @{($pos || []) || []} ) {
-                ((my  $arg = undef) = $field->emit_python_name());
+            for my $field ( @{($pos)} ) {
+                ((my  $arg) = $field->emit_python_name());
                 push( @{$args}, $arg );
-                push( @{$default_args}, $arg . chr(61) . 'mp6_Scalar' . chr(40) . chr(41) );
-                push( @{$meth_args}, $arg . chr(61) . 'mp6_Scalar' . chr(40) . chr(41) )
+                push( @{$default_args}, ($arg . chr(61) . 'mp6_Scalar()') );
+                push( @{$meth_args}, ($arg . chr(61) . 'mp6_Scalar()') )
             };
-            ((my  $block = undef) = Perlito::Python::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1)));
-            ((my  $label2 = undef) = '_anon_' . Perlito::Python::LexicalBlock::get_ident_python());
-            (my  $List_s = []);
-            push( @{$List_s}, Python::tab($level) . 'def f_' . $self->{name} . chr(40) . Main::join($default_args, ', ') . chr(41) . ':' );
-            push( @{$List_s}, Python::tab(($level + 1)) . 'try:' );
+            ((my  $block) = Perlito::Python::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1)));
+            ((my  $label2) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+            (my  $List_s = bless [], 'ARRAY');
+            push( @{$List_s}, (Python::tab($level) . ('def f_') . $self->{name} . ('(') . Main::join($default_args, (', ')) . ('):')) );
+            push( @{$List_s}, (Python::tab(($level + 1)) . ('try:')) );
             push( @{$List_s}, $block->emit_python_indented(($level + 2)) );
-            push( @{$List_s}, Python::tab(($level + 1)) . 'except mp6_Return, r:' );
-            push( @{$List_s}, Python::tab(($level + 2)) . 'return r.value' );
-            push( @{$List_s}, Python::tab($level) . 'global ' . $label2 );
-            push( @{$List_s}, Python::tab($level) . $label2 . ' ' . chr(61) . ' f_' . $self->{name} );
-            push( @{$List_s}, Python::tab($level) . 'def f_' . $label . chr(40) . Main::join($meth_args, ', ') . chr(41) . ':' );
-            push( @{$List_s}, Python::tab(($level + 1)) . 'return ' . $label2 . chr(40) . Main::join($args, ', ') . chr(41) );
-            push( @{$List_s}, Python::tab($level) . 'self.__dict__.update' . chr(40) . chr(123) . chr(39) . 'f_' . $self->{name} . chr(39) . ':f_' . $label . chr(125) . chr(41) );
-            return scalar (Main::join($List_s, chr(10)))
+            push( @{$List_s}, (Python::tab(($level + 1)) . ('except mp6_Return, r:')) );
+            push( @{$List_s}, (Python::tab(($level + 2)) . ('return r.value')) );
+            push( @{$List_s}, (Python::tab($level) . ('global ') . $label2) );
+            push( @{$List_s}, (Python::tab($level) . $label2 . (' ' . chr(61) . ' f_') . $self->{name}) );
+            push( @{$List_s}, (Python::tab($level) . ('def f_') . $label . ('(') . Main::join($meth_args, (', ')) . ('):')) );
+            push( @{$List_s}, (Python::tab(($level + 1)) . ('return ') . $label2 . ('(') . Main::join($args, (', ')) . (')')) );
+            push( @{$List_s}, (Python::tab($level) . ('self.__dict__.update(' . chr(123) . chr(39) . 'f_') . $self->{name} . (chr(39) . ':f_') . $label . (chr(125) . ')')) );
+            return scalar (Main::join($List_s, (chr(10))))
         }
     }
 
@@ -1064,22 +1113,22 @@ $self->emit_python_indented(0)
         sub block { $_[0]->{block} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];
             my $level = $_[1];
-            ((my  $label = undef) = '_anon_' . Perlito::Python::LexicalBlock::get_ident_python());
-            ((my  $block = undef) = $self->simplify()->block());
-            Perlito::Python::LexicalBlock::push_stmt_python(Perlito::Python::AnonSub->new(('name' => $label), ('block' => $block), ('sig' => Sig->new(('invocant' => undef), ('positional' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $label) = ('_anon_' . Perlito::Python::LexicalBlock::get_ident_python()));
+            ((my  $block) = $self->simplify()->block());
+            Perlito::Python::LexicalBlock::push_stmt_python(Perlito::Python::AnonSub->new(('name' => $label), ('block' => $block), ('sig' => Sig->new(('invocant' => undef()), ('positional' => do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 }), ('named' => do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     $Hash_a
 }))), ('handles_return_exception' => 0)));
-            return scalar (Python::tab($level) . 'f_' . $label . chr(40) . chr(41))
+            return scalar ((Python::tab($level) . ('f_') . $label . ('()')))
         }
     }
 
@@ -1090,7 +1139,7 @@ $self->emit_python_indented(0)
         sub mod { $_[0]->{mod} };
         sub emit_python {
             my $self = $_[0];
-$self->emit_python_indented(0)
+            $self->emit_python_indented(0)
         };
         sub emit_python_indented {
             my $self = $_[0];

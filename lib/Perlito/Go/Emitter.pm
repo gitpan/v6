@@ -21,66 +21,66 @@ package GLOBAL;
         sub top_level { $_[0]->{top_level} };
         sub emit_go {
             my $self = $_[0];
-            if (Main::bool(!Main::bool(($self->{block})))) {
+            if (!(($self->{block}))) {
                 return scalar ('')
             };
-            ((my  $str = undef) = '');
-            (my  $Hash_decl_seen = {});
-            for my $decl1 ( @{$self->{block} || []} ) {
-                ((my  $decl = undef) = $decl1);
-                if (Main::bool(((Main::isa($decl, 'Bind') && Main::isa(($decl->parameters()), 'Decl')) && ((($decl->parameters())->decl() eq 'my'))))) {
+            ((my  $str) = '');
+            (my  $Hash_decl_seen = bless {}, 'HASH');
+            for my $decl1 ( @{$self->{block}} ) {
+                ((my  $decl) = $decl1);
+                if (((Main::isa($decl, 'Bind') && Main::isa(($decl->parameters()), 'Decl')) && ((($decl->parameters())->decl() eq 'my')))) {
                     ($decl = $decl->parameters())
                 };
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my'))))) {
-                    ((my  $var_name = undef) = (($decl)->var())->emit_go());
-                    if (Main::bool(!Main::bool(($Hash_decl_seen->{$var_name})))) {
-                        ($str = $str . $decl->emit_go_init());
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my')))) {
+                    ((my  $var_name) = (($decl)->var())->emit_go());
+                    if (!(($Hash_decl_seen->{$var_name}))) {
+                        ($str = ($str . $decl->emit_go_init()));
                         ($Hash_decl_seen->{$var_name} = 1)
                     }
                 }
             };
-            (my  $last_statement = undef);
-            if (Main::bool($self->{needs_return})) {
+            (my  $last_statement);
+            if ($self->{needs_return}) {
                 ($last_statement = pop( @{$self->{block}} ))
             };
-            for my $decl ( @{$self->{block} || []} ) {
-                if (Main::bool((!Main::bool(((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my')))))))) {
-                    ($str = $str . ($decl)->emit_go(("" . chr(59))))
+            for my $decl ( @{$self->{block}} ) {
+                if ((!(((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my'))))))) {
+                    ($str = ($str . ($decl)->emit_go() . chr(59)))
                 }
             };
-            if (Main::bool(($self->{needs_return} && $last_statement))) {
-                if (Main::bool(Main::isa($last_statement, 'If'))) {
-                    ((my  $cond = undef) = $last_statement->cond());
-                    ((my  $body = undef) = $last_statement->body());
-                    ((my  $otherwise = undef) = $last_statement->otherwise());
-                    if (Main::bool((Main::isa($cond, 'Apply') && ($cond->code() eq 'prefix:' . chr(60) . chr(33) . chr(62))))) {
+            if (($self->{needs_return} && $last_statement)) {
+                if (Main::isa($last_statement, 'If')) {
+                    ((my  $cond) = $last_statement->cond());
+                    ((my  $body) = $last_statement->body());
+                    ((my  $otherwise) = $last_statement->otherwise());
+                    if ((Main::isa($cond, 'Apply') && ($cond->code() eq 'prefix:<' . chr(33) . '>'))) {
                         ($cond = ($cond->arguments())->[0]);
                         ($body = $last_statement->otherwise());
                         ($otherwise = $last_statement->body())
                     };
-                    if (Main::bool((Main::isa($cond, 'Var') && ($cond->sigil() eq chr(64))))) {
-                        ($cond = Apply->new(('code' => 'prefix:' . chr(60) . chr(64) . chr(62)), ('arguments' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+                    if ((Main::isa($cond, 'Var') && ($cond->sigil() eq chr(64)))) {
+                        ($cond = Apply->new(('code' => 'prefix:<' . chr(64) . '>'), ('arguments' => do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $cond );
     $List_a
 })))
                     };
                     ($body = Perlito::Go::LexicalBlock->new(('block' => $body), ('needs_return' => 1), ('top_level' => $self->{top_level})));
                     ($otherwise = Perlito::Go::LexicalBlock->new(('block' => $otherwise), ('needs_return' => 1), ('top_level' => $self->{top_level})));
-                    ($str = $str . 'if tobool' . chr(40) . ' ' . Call::emit_go_call($cond, 'Bool') . ' ' . chr(41) . ' ' . chr(123) . ' ' . $body->emit_go(("" . ' ' . chr(125) . ' else ' . chr(123) . ' ') . $otherwise->emit_go(("" . ' ' . chr(125)))))
+                    ($str = ($str . 'if tobool( ' . Call::emit_go_call($cond, 'Bool') . ' ) ' . chr(123) . ' ' . $body->emit_go() . ' ' . chr(125) . ' else ' . chr(123) . ' ' . $otherwise->emit_go() . ' ' . chr(125)))
                 }
                 else {
-                    if (Main::bool((Main::isa($last_statement, 'Return') || Main::isa($last_statement, 'For')))) {
-                        ($str = $str . $last_statement->emit_go())
+                    if ((Main::isa($last_statement, 'Return') || Main::isa($last_statement, 'For'))) {
+                        ($str = ($str . $last_statement->emit_go()))
                     }
                     else {
                         ($last_statement = Return->new(('result' => $last_statement)));
-                        if (Main::bool($self->{top_level})) {
-                            ($str = $str . $last_statement->emit_go())
+                        if ($self->{top_level}) {
+                            ($str = ($str . $last_statement->emit_go()))
                         }
                         else {
-                            ($str = $str . $last_statement->emit_go_simple())
+                            ($str = ($str . $last_statement->emit_go_simple()))
                         }
                     }
                 }
@@ -99,121 +99,121 @@ package GLOBAL;
         sub body { $_[0]->{body} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $class_name = undef) = Main::to_go_namespace($self->{name}));
-            ((my  $str = undef) = chr(47) . chr(47) . ' instances of class ' . $self->{name} . chr(10) . 'type ' . $class_name . ' struct ' . chr(123) . chr(10));
-            for my $decl ( @{(([values( %{($self->{attributes})} )]) || []) || []} ) {
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has'))))) {
-                    ($str = $str . '  ' . 'v_' . ($decl->var())->name(("" . ' *Any' . chr(59)) . chr(10)))
+            ((my  $class_name) = Main::to_go_namespace($self->{name}));
+            ((my  $str) = (chr(47) . chr(47) . ' instances of class ' . $self->{name} . (chr(10)) . 'type ' . $class_name . ' struct ' . chr(123) . (chr(10))));
+            for my $decl ( @{((Main::values(($self->{attributes}), )))} ) {
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has')))) {
+                    ($str = ($str . '  ' . 'v_' . ($decl->var())->name() . ' *Any' . chr(59) . (chr(10))))
                 }
             };
-            ($str = $str . chr(125) . chr(10));
-            ($str = $str . chr(47) . chr(47) . ' methods in class ' . $self->{name} . chr(10) . 'var Method_' . $class_name . ' struct ' . chr(123) . chr(10));
-            for my $decl ( @{(([values( %{($self->{methods})} )]) || []) || []} ) {
-                if (Main::bool(Main::isa($decl, 'Method'))) {
-                    ($str = $str . '  ' . 'f_' . $decl->name(("" . ' func ' . chr(40) . '*') . $class_name . ', Capture' . chr(41) . ' *Any' . chr(59) . chr(10)))
+            ($str = ($str . chr(125) . (chr(10))));
+            ($str = ($str . chr(47) . chr(47) . ' methods in class ' . $self->{name} . (chr(10)) . 'var Method_' . $class_name . ' struct ' . chr(123) . (chr(10))));
+            for my $decl ( @{((Main::values(($self->{methods}), )))} ) {
+                if (Main::isa($decl, 'Method')) {
+                    ($str = ($str . '  ' . 'f_' . $decl->name() . ' func (*' . $class_name . ', Capture) *Any' . chr(59) . (chr(10))))
                 }
             };
-            for my $decl ( @{(([values( %{($self->{attributes})} )]) || []) || []} ) {
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has'))))) {
-                    ($str = $str . '  ' . 'f_' . ($decl->var())->name(("" . ' func ' . chr(40) . '*') . $class_name . ', Capture' . chr(41) . ' *Any' . chr(59) . chr(10)))
+            for my $decl ( @{((Main::values(($self->{attributes}), )))} ) {
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has')))) {
+                    ($str = ($str . '  ' . 'f_' . ($decl->var())->name() . ' func (*' . $class_name . ', Capture) *Any' . chr(59) . (chr(10))))
                 }
             };
-            ($str = $str . chr(125) . chr(10));
-            ($str = $str . chr(47) . chr(47) . ' namespace ' . $self->{name} . chr(10) . 'var Namespace_' . $class_name . ' struct ' . chr(123) . chr(10));
-            for my $decl ( @{$self->{body} || []} ) {
-                if (Main::bool(Main::isa($decl, 'Sub'))) {
-                    ($str = $str . '  ' . 'f_' . $decl->name(("" . ' Function' . chr(59)) . chr(10)))
+            ($str = ($str . chr(125) . (chr(10))));
+            ($str = ($str . chr(47) . chr(47) . ' namespace ' . $self->{name} . (chr(10)) . 'var Namespace_' . $class_name . ' struct ' . chr(123) . (chr(10))));
+            for my $decl ( @{$self->{body}} ) {
+                if (Main::isa($decl, 'Sub')) {
+                    ($str = ($str . '  ' . 'f_' . $decl->name() . ' Function' . chr(59) . (chr(10))))
                 }
             };
-            ($str = $str . chr(125) . chr(10));
-            ($str = $str . 'var Run_' . $class_name . ' func ' . chr(40) . chr(41) . chr(59) . chr(10));
-            ($str = $str . chr(47) . chr(47) . ' method wrappers for ' . $self->{name} . chr(10));
-            for my $decl ( @{(([values( %{($self->{methods})} )]) || []) || []} ) {
-                if (Main::bool(Main::isa($decl, 'Method'))) {
-                    ($str = $str . 'func ' . chr(40) . 'v_self *' . $class_name . chr(41) . ' f_' . $decl->name(("" . ' ' . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123)) . chr(10) . '  return Method_' . $class_name . '.f_' . $decl->name(("" . chr(40) . 'v_self, v' . chr(41) . chr(59)) . chr(10) . chr(125) . chr(10))))
+            ($str = ($str . chr(125) . (chr(10))));
+            ($str = ($str . 'var Run_' . $class_name . ' func ()' . chr(59) . (chr(10))));
+            ($str = ($str . chr(47) . chr(47) . ' method wrappers for ' . $self->{name} . (chr(10))));
+            for my $decl ( @{((Main::values(($self->{methods}), )))} ) {
+                if (Main::isa($decl, 'Method')) {
+                    ($str = ($str . 'func (v_self *' . $class_name . ') f_' . $decl->name() . ' (v Capture) *Any ' . chr(123) . (chr(10)) . '  return Method_' . $class_name . '.f_' . $decl->name() . '(v_self, v)' . chr(59) . (chr(10)) . chr(125) . (chr(10))))
                 }
             };
-            for my $decl ( @{(([values( %{($self->{attributes})} )]) || []) || []} ) {
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has'))))) {
-                    ($str = $str . 'func ' . chr(40) . 'v_self *' . $class_name . chr(41) . ' f_' . ($decl->var())->name(("" . ' ' . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123)) . chr(10) . '  return Method_' . $class_name . '.f_' . ($decl->var())->name(("" . chr(40) . 'v_self, v' . chr(41) . chr(59)) . chr(10) . chr(125) . chr(10))))
+            for my $decl ( @{((Main::values(($self->{attributes}), )))} ) {
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has')))) {
+                    ($str = ($str . 'func (v_self *' . $class_name . ') f_' . ($decl->var())->name() . ' (v Capture) *Any ' . chr(123) . (chr(10)) . '  return Method_' . $class_name . '.f_' . ($decl->var())->name() . '(v_self, v)' . chr(59) . (chr(10)) . chr(125) . (chr(10))))
                 }
             };
-            if (Main::bool(!Main::bool((($self->{methods})->{'isa'})))) {
-                ($str = $str . 'func ' . chr(40) . 'v_self *' . $class_name . chr(41) . ' f_isa ' . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123) . ' ' . 'return toBool' . chr(40) . ' ' . chr(34) . $self->{name} . chr(34) . ' ' . chr(61) . chr(61) . ' tostr' . chr(40) . ' v.p' . chr(91) . '0' . chr(93) . ' ' . chr(41) . ' ' . chr(41) . ' ' . chr(125) . chr(10))
+            if (!((($self->{methods})->{'isa'}))) {
+                ($str = ($str . 'func (v_self *' . $class_name . ') f_isa (v Capture) *Any ' . chr(123) . ' ' . 'return toBool( ' . chr(34) . $self->{name} . chr(34) . ' ' . chr(61) . chr(61) . ' tostr( v.p[0] ) ) ' . chr(125) . (chr(10))))
             };
-            if (Main::bool(!Main::bool((($self->{methods})->{'perl'})))) {
-                ($str = $str . 'func ' . chr(40) . 'v_self *' . $class_name . chr(41) . ' f_perl ' . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123) . ' ' . 'return toStr' . chr(40) . ' ' . chr(34) . '::' . $self->{name} . chr(40) . chr(34) . ' ');
-                ((my  $sep = undef) = '');
-                for my $decl ( @{(([values( %{($self->{attributes})} )]) || []) || []} ) {
-                    if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has'))))) {
-                        ($str = $str . $sep . '+ ' . chr(34) . ($decl->var())->name(("" . ' ' . chr(61) . chr(62) . ' ' . chr(34)) . '+ tostr' . chr(40) . chr(40) . '*' . chr(40) . '*v_self' . chr(41) . '.f_' . ($decl->var())->name(("" . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41) . chr(41) . '.' . chr(40) . 'perl_er' . chr(41) . '.f_perl' . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41) . chr(41) . ' '))));
+            if (!((($self->{methods})->{'perl'}))) {
+                ($str = ($str . 'func (v_self *' . $class_name . ') f_perl (v Capture) *Any ' . chr(123) . ' ' . 'return toStr( ' . chr(34) . '::' . $self->{name} . '(' . chr(34) . ' '));
+                ((my  $sep) = '');
+                for my $decl ( @{((Main::values(($self->{attributes}), )))} ) {
+                    if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has')))) {
+                        ($str = ($str . $sep . '+ ' . chr(34) . ($decl->var())->name() . ' ' . chr(61) . '> ' . chr(34) . '+ tostr((*(*v_self).f_' . ($decl->var())->name() . '(Capture' . chr(123) . chr(125) . ')).(perl_er).f_perl(Capture' . chr(123) . chr(125) . ')) '));
                         ($sep = '+ ' . chr(34) . ', ' . chr(34) . ' ')
                     }
                 };
-                ($str = $str . '+ ' . chr(34) . chr(41) . chr(34) . ' ' . chr(41) . ' ' . chr(125) . chr(10))
+                ($str = ($str . '+ ' . chr(34) . ')' . chr(34) . ' ) ' . chr(125) . (chr(10))))
             };
-            if (Main::bool(((!Main::bool((($self->{methods})->{'Bool'}))) && (!Main::bool((($self->{attributes})->{'Bool'})))))) {
-                ($str = $str . 'func ' . chr(40) . 'v_self *' . $class_name . chr(41) . ' f_Bool ' . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123) . ' ' . 'return b_true' . chr(40) . chr(41) . ' ' . chr(125) . chr(10))
+            if (((!((($self->{methods})->{'Bool'}))) && (!((($self->{attributes})->{'Bool'}))))) {
+                ($str = ($str . 'func (v_self *' . $class_name . ') f_Bool (v Capture) *Any ' . chr(123) . ' ' . 'return b_true() ' . chr(125) . (chr(10))))
             };
-            ($str = $str . chr(47) . chr(47) . ' prototype of ' . $self->{name} . chr(10) . 'var Proto_' . $class_name . ' *Any' . chr(59) . chr(10));
-            ($str = $str . 'func Init_' . $class_name . chr(40) . chr(41) . ' ' . chr(123) . chr(10));
-            ($str = $str . '  this_namespace :' . chr(61) . ' ' . chr(38) . 'Namespace_' . $class_name . chr(59) . chr(10) . '  this_namespace ' . chr(61) . ' this_namespace' . chr(59) . chr(10));
-            ($str = $str . '  Proto_' . $class_name . ' ' . chr(61) . ' ' . 'func' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' ' . 'var m ' . chr(61) . ' new' . chr(40) . $class_name . chr(41) . chr(59) . ' ' . 'var m1 Any ' . chr(61) . ' m' . chr(59) . ' ' . 'return ' . chr(38) . 'm1' . chr(59) . ' ' . chr(125) . chr(40) . chr(41) . chr(59) . chr(10));
-            (my  $Hash_decl_seen = {});
-            for my $decl1 ( @{$self->{body} || []} ) {
-                ((my  $decl = undef) = $decl1);
-                if (Main::bool(((Main::isa($decl, 'Bind') && Main::isa(($decl->parameters()), 'Decl')) && ((($decl->parameters())->decl() eq 'my'))))) {
+            ($str = ($str . chr(47) . chr(47) . ' prototype of ' . $self->{name} . (chr(10)) . 'var Proto_' . $class_name . ' *Any' . chr(59) . (chr(10))));
+            ($str = ($str . 'func Init_' . $class_name . '() ' . chr(123) . (chr(10))));
+            ($str = ($str . '  this_namespace :' . chr(61) . ' ' . chr(38) . 'Namespace_' . $class_name . chr(59) . (chr(10)) . '  this_namespace ' . chr(61) . ' this_namespace' . chr(59) . (chr(10))));
+            ($str = ($str . '  Proto_' . $class_name . ' ' . chr(61) . ' ' . 'func() *Any ' . chr(123) . ' ' . 'var m ' . chr(61) . ' new(' . $class_name . ')' . chr(59) . ' ' . 'var m1 Any ' . chr(61) . ' m' . chr(59) . ' ' . 'return ' . chr(38) . 'm1' . chr(59) . ' ' . chr(125) . '()' . chr(59) . (chr(10))));
+            (my  $Hash_decl_seen = bless {}, 'HASH');
+            for my $decl1 ( @{$self->{body}} ) {
+                ((my  $decl) = $decl1);
+                if (((Main::isa($decl, 'Bind') && Main::isa(($decl->parameters()), 'Decl')) && ((($decl->parameters())->decl() eq 'my')))) {
                     ($decl = $decl->parameters())
                 };
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my'))))) {
-                    ((my  $var_name = undef) = (($decl)->var())->emit_go());
-                    if (Main::bool(!Main::bool(($Hash_decl_seen->{$var_name})))) {
-                        ($str = $str . $decl->emit_go_init());
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'my')))) {
+                    ((my  $var_name) = (($decl)->var())->emit_go());
+                    if (!(($Hash_decl_seen->{$var_name}))) {
+                        ($str = ($str . $decl->emit_go_init()));
                         ($Hash_decl_seen->{$var_name} = 1)
                     }
                 }
             };
-            for my $decl ( @{$self->{body} || []} ) {
-                if (Main::bool((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has'))))) {
-                    ($str = $str . '  ' . chr(47) . chr(47) . ' accessor ' . ($decl->var())->name(("" . chr(10)) . '  Method_' . $class_name . '.f_' . ($decl->var())->name(("" . ' ' . chr(61) . ' func ' . chr(40) . 'v_self *') . $class_name . ', v Capture' . chr(41) . ' *Any ' . chr(123) . chr(10))));
-                    ($str = $str . '    ' . 'if v_self.v_' . ($decl->var())->name(("" . ' ' . chr(61) . chr(61) . ' nil ' . chr(123)) . chr(10) . '      ' . (Decl->new(('decl' => 'my'), ('type' => undef()), ('var' => Var->new(('sigil' => ($decl->var())->sigil()), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp')))))->emit_go_init(("" . '      ') . 'v_self.v_' . ($decl->var())->name(("" . ' ' . chr(61) . ' ') . (Var->new(('sigil' => ($decl->var())->sigil()), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp')))->emit_go(("" . chr(59)) . chr(10) . '    ' . chr(125) . chr(10))))));
-                    ($str = $str . '    ' . 'if *v_self.v_' . ($decl->var())->name(("" . ' ' . chr(61) . chr(61) . ' nil ' . chr(123)) . chr(10) . '      ' . (Decl->new(('decl' => 'my'), ('type' => undef()), ('var' => Var->new(('sigil' => ($decl->var())->sigil()), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp')))))->emit_go_init(("" . '      ') . 'v_self.v_' . ($decl->var())->name(("" . ' ' . chr(61) . ' ') . (Var->new(('sigil' => ($decl->var())->sigil()), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp')))->emit_go(("" . chr(59)) . chr(10) . '    ' . chr(125) . chr(10))))));
-                    ($str = $str . '    ' . 'return v_self.v_' . ($decl->var())->name(("" . chr(10)) . '  ' . chr(125) . chr(59) . chr(10)))
+            for my $decl ( @{$self->{body}} ) {
+                if ((Main::isa($decl, 'Decl') && (($decl->decl() eq 'has')))) {
+                    ($str = ($str . '  ' . chr(47) . chr(47) . ' accessor ' . ($decl->var())->name() . (chr(10)) . '  Method_' . $class_name . '.f_' . ($decl->var())->name() . ' ' . chr(61) . ' func (v_self *' . $class_name . ', v Capture) *Any ' . chr(123) . (chr(10))));
+                    ($str = ($str . '    ' . 'if v_self.v_' . ($decl->var())->name() . ' ' . chr(61) . chr(61) . ' nil ' . chr(123) . (chr(10)) . '      ' . (Decl->new(('decl' => 'my'), ('type' => undef()), ('var' => Var->new(('sigil' => ($decl->var())->sigil()), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp')))))->emit_go_init() . '      ' . 'v_self.v_' . ($decl->var())->name() . ' ' . chr(61) . ' ' . (Var->new(('sigil' => ($decl->var())->sigil()), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp')))->emit_go() . chr(59) . (chr(10)) . '    ' . chr(125) . (chr(10))));
+                    ($str = ($str . '    ' . 'if *v_self.v_' . ($decl->var())->name() . ' ' . chr(61) . chr(61) . ' nil ' . chr(123) . (chr(10)) . '      ' . (Decl->new(('decl' => 'my'), ('type' => undef()), ('var' => Var->new(('sigil' => ($decl->var())->sigil()), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp')))))->emit_go_init() . '      ' . 'v_self.v_' . ($decl->var())->name() . ' ' . chr(61) . ' ' . (Var->new(('sigil' => ($decl->var())->sigil()), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp')))->emit_go() . chr(59) . (chr(10)) . '    ' . chr(125) . (chr(10))));
+                    ($str = ($str . '    ' . 'return v_self.v_' . ($decl->var())->name() . (chr(10)) . '  ' . chr(125) . chr(59) . (chr(10))))
                 };
-                if (Main::bool(Main::isa($decl, 'Method'))) {
-                    ((my  $sig = undef) = $decl->sig());
-                    ((my  $block = undef) = Perlito::Go::LexicalBlock->new(('block' => $decl->block()), ('needs_return' => 1), ('top_level' => 1)));
-                    ($str = $str . '  ' . chr(47) . chr(47) . ' method ' . $decl->name(("" . chr(10)) . '  Method_' . $class_name . '.f_' . $decl->name(("" . ' ' . chr(61) . ' func ' . chr(40) . 'self *') . $class_name . ', v Capture' . chr(41) . ' *Any ' . chr(123) . chr(10))));
-                    ($str = $str . '    var self1 Any ' . chr(61) . ' self' . chr(59) . chr(10) . '    var ' . ($sig->invocant())->emit_go(("" . ' *Any ' . chr(61) . ' ' . chr(38) . 'self1' . chr(59)) . chr(10) . '    ' . ($sig->invocant())->emit_go(("" . ' ' . chr(61) . ' ') . ($sig->invocant())->emit_go(("" . chr(59)) . chr(10) . '    ' . $sig->emit_go_bind(("" . chr(10)))))));
-                    ($str = $str . '    p :' . chr(61) . ' make' . chr(40) . 'chan *Any' . chr(41) . chr(59) . ' go func ' . chr(40) . chr(41) . ' ' . chr(123) . ' ' . chr(10) . '        ' . $block->emit_go(("" . chr(59) . ' p ' . chr(60) . '- nil ' . chr(125) . chr(40) . chr(41) . chr(59) . ' ') . chr(10) . '    return ' . chr(60) . '-p' . chr(59) . ' ' . chr(10) . '  ' . chr(125) . chr(59) . chr(10)))
+                if (Main::isa($decl, 'Method')) {
+                    ((my  $sig) = $decl->sig());
+                    ((my  $block) = Perlito::Go::LexicalBlock->new(('block' => $decl->block()), ('needs_return' => 1), ('top_level' => 1)));
+                    ($str = ($str . '  ' . chr(47) . chr(47) . ' method ' . $decl->name() . (chr(10)) . '  Method_' . $class_name . '.f_' . $decl->name() . ' ' . chr(61) . ' func (self *' . $class_name . ', v Capture) *Any ' . chr(123) . (chr(10))));
+                    ($str = ($str . '    var self1 Any ' . chr(61) . ' self' . chr(59) . (chr(10)) . '    var ' . ($sig->invocant())->emit_go() . ' *Any ' . chr(61) . ' ' . chr(38) . 'self1' . chr(59) . (chr(10)) . '    ' . ($sig->invocant())->emit_go() . ' ' . chr(61) . ' ' . ($sig->invocant())->emit_go() . chr(59) . (chr(10)) . '    ' . $sig->emit_go_bind() . (chr(10))));
+                    ($str = ($str . '    p :' . chr(61) . ' make(chan *Any)' . chr(59) . ' go func () ' . chr(123) . ' ' . (chr(10)) . '        ' . $block->emit_go() . chr(59) . ' p <- nil ' . chr(125) . '()' . chr(59) . ' ' . (chr(10)) . '    return <-p' . chr(59) . ' ' . (chr(10)) . '  ' . chr(125) . chr(59) . (chr(10))))
                 };
-                if (Main::bool(Main::isa($decl, 'Sub'))) {
-                    ((my  $sig = undef) = $decl->sig());
-                    ((my  $block = undef) = Perlito::Go::LexicalBlock->new(('block' => $decl->block()), ('needs_return' => 1), ('top_level' => 1)));
-                    ($str = $str . '  ' . chr(47) . chr(47) . ' sub ' . $decl->name(("" . chr(10)) . '  Namespace_' . $class_name . '.f_' . $decl->name(("" . ' ' . chr(61) . ' Function' . chr(40) . ' func ' . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123)) . chr(10))));
-                    ($str = $str . '    ' . $sig->emit_go_bind(("" . chr(10)) . '    p :' . chr(61) . ' make' . chr(40) . 'chan *Any' . chr(41) . chr(59) . ' go func ' . chr(40) . chr(41) . ' ' . chr(123) . ' ' . chr(10) . '        ' . $block->emit_go(("" . chr(59) . ' p ' . chr(60) . '- nil ' . chr(125) . chr(40) . chr(41) . chr(59) . ' ') . chr(10))));
-                    ($str = $str . '    return ' . chr(60) . '-p' . chr(59) . ' ' . chr(10) . '  ' . chr(125) . ' ' . chr(41) . chr(59) . chr(10))
+                if (Main::isa($decl, 'Sub')) {
+                    ((my  $sig) = $decl->sig());
+                    ((my  $block) = Perlito::Go::LexicalBlock->new(('block' => $decl->block()), ('needs_return' => 1), ('top_level' => 1)));
+                    ($str = ($str . '  ' . chr(47) . chr(47) . ' sub ' . $decl->name() . (chr(10)) . '  Namespace_' . $class_name . '.f_' . $decl->name() . ' ' . chr(61) . ' Function( func (v Capture) *Any ' . chr(123) . (chr(10))));
+                    ($str = ($str . '    ' . $sig->emit_go_bind() . (chr(10)) . '    p :' . chr(61) . ' make(chan *Any)' . chr(59) . ' go func () ' . chr(123) . ' ' . (chr(10)) . '        ' . $block->emit_go() . chr(59) . ' p <- nil ' . chr(125) . '()' . chr(59) . ' ' . (chr(10))));
+                    ($str = ($str . '    return <-p' . chr(59) . ' ' . (chr(10)) . '  ' . chr(125) . ' )' . chr(59) . (chr(10))))
                 }
             };
-            ($str = $str . '  ' . chr(47) . chr(47) . ' main runtime block of ' . $self->{name} . chr(10) . '  Run_' . $class_name . ' ' . chr(61) . ' func ' . chr(40) . chr(41) . ' ' . chr(123) . chr(10));
-            for my $decl ( @{$self->{body} || []} ) {
-                if (Main::bool((((!Main::bool(((Main::isa($decl, 'Decl') && (((($decl->decl() eq 'has')) || (($decl->decl() eq 'my')))))))) && (!Main::bool((Main::isa($decl, 'Method'))))) && (!Main::bool((Main::isa($decl, 'Sub'))))))) {
-                    ($str = $str . '    ' . ($decl)->emit_go(("" . chr(59)) . chr(10)))
+            ($str = ($str . '  ' . chr(47) . chr(47) . ' main runtime block of ' . $self->{name} . (chr(10)) . '  Run_' . $class_name . ' ' . chr(61) . ' func () ' . chr(123) . (chr(10))));
+            for my $decl ( @{$self->{body}} ) {
+                if ((((!(((Main::isa($decl, 'Decl') && (((($decl->decl() eq 'has')) || (($decl->decl() eq 'my')))))))) && (!((Main::isa($decl, 'Method'))))) && (!((Main::isa($decl, 'Sub')))))) {
+                    ($str = ($str . '    ' . ($decl)->emit_go() . chr(59) . (chr(10))))
                 }
             };
-            ($str = $str . '  ' . chr(125) . chr(10));
-            ($str = $str . chr(125) . chr(10));
+            ($str = ($str . '  ' . chr(125) . (chr(10))));
+            ($str = ($str . chr(125) . (chr(10))));
             return scalar ($str)
         };
         sub emit_go_program {
             my $comp_units = $_[0];
-            ((my  $str = undef) = '');
-            (my  $Hash_unit_seen = {});
-            (my  $List_tmp_comp_unit = []);
-            for my $comp_unit ( @{(($comp_units) || []) || []} ) {
-                ((my  $name = undef) = $comp_unit->name());
-                if (Main::bool($Hash_unit_seen->{$name})) {
-                    for my $stmt ( @{(($comp_unit->body()) || []) || []} ) {
+            ((my  $str) = '');
+            (my  $Hash_unit_seen = bless {}, 'HASH');
+            (my  $List_tmp_comp_unit = bless [], 'ARRAY');
+            for my $comp_unit ( @{(($comp_units))} ) {
+                ((my  $name) = $comp_unit->name());
+                if ($Hash_unit_seen->{$name}) {
+                    for my $stmt ( @{(($comp_unit->body()))} ) {
                         push( @{($Hash_unit_seen->{$name})->body()}, $stmt )
                     }
                 }
@@ -223,25 +223,25 @@ package GLOBAL;
                 }
             };
             ($comp_units = $List_tmp_comp_unit);
-            for my $comp_unit ( @{(($comp_units) || []) || []} ) {
-                for my $stmt ( @{(($comp_unit->body()) || []) || []} ) {
-                    if (Main::bool(Main::isa($stmt, 'Method'))) {
+            for my $comp_unit ( @{(($comp_units))} ) {
+                for my $stmt ( @{(($comp_unit->body()))} ) {
+                    if (Main::isa($stmt, 'Method')) {
                         (($comp_unit->methods())->{$stmt->name()} = $stmt)
                     };
-                    if (Main::bool((Main::isa($stmt, 'Decl') && (($stmt->decl() eq 'has'))))) {
+                    if ((Main::isa($stmt, 'Decl') && (($stmt->decl() eq 'has')))) {
                         (($comp_unit->attributes())->{($stmt->var())->name()} = $stmt)
                     }
                 }
             };
-            for my $comp_unit ( @{(($comp_units) || []) || []} ) {
-                ($str = $str . $comp_unit->emit_go())
+            for my $comp_unit ( @{(($comp_units))} ) {
+                ($str = ($str . $comp_unit->emit_go()))
             };
-            if (Main::bool(!Main::bool(($Hash_unit_seen->{'Perlito::Grammar'})))) {
-                ($str = $str . 'type Perlito__Grammar struct' . chr(123) . chr(125) . chr(10))
+            if (!(($Hash_unit_seen->{('Perlito::Grammar')}))) {
+                ($str = ($str . ('type Perlito__Grammar struct' . chr(123) . chr(125) . chr(10))))
             };
-            ($str = $str . chr(47) . chr(47) . ' interfaces for all methods' . chr(10));
-            ((my  $Hash_meth_seen = {}) = do {
-    (my  $Hash_a = {});
+            ($str = ($str . (chr(47) . chr(47) . ' interfaces for all methods' . chr(10))));
+            ((my  $Hash_meth_seen = bless {}, 'HASH') = do {
+    (my  $Hash_a = bless {}, 'HASH');
     ($Hash_a->{'join'} = 1);
     ($Hash_a->{'perl'} = 1);
     ($Hash_a->{'scalar'} = 1);
@@ -266,29 +266,29 @@ package GLOBAL;
     ($Hash_a->{'function'} = 1);
     $Hash_a
 });
-            for my $comp_unit ( @{(($comp_units) || []) || []} ) {
-                for my $stmt ( @{(($comp_unit->body()) || []) || []} ) {
-                    if (Main::bool((Main::isa($stmt, 'Method') && !Main::bool(($Hash_meth_seen->{$stmt->name()}))))) {
-                        ((my  $meth = undef) = $stmt->name());
-                        ($str = $str . 'type ' . $meth . '_er interface ' . chr(123) . ' f_' . $meth . ' ' . chr(40) . 'Capture' . chr(41) . ' *Any ' . chr(125) . chr(10));
+            for my $comp_unit ( @{(($comp_units))} ) {
+                for my $stmt ( @{(($comp_unit->body()))} ) {
+                    if ((Main::isa($stmt, 'Method') && !(($Hash_meth_seen->{$stmt->name()})))) {
+                        ((my  $meth) = $stmt->name());
+                        ($str = ($str . ('type ') . $meth . ('_er interface ' . chr(123) . ' f_') . $meth . (' (Capture) *Any ' . chr(125) . chr(10))));
                         ($Hash_meth_seen->{$meth} = 1)
                     };
-                    if (Main::bool(((Main::isa($stmt, 'Decl') && (($stmt->decl() eq 'has'))) && !Main::bool(($Hash_meth_seen->{($stmt->var())->name()}))))) {
-                        ((my  $meth = undef) = ($stmt->var())->name());
-                        ($str = $str . 'type ' . $meth . '_er interface ' . chr(123) . ' f_' . $meth . ' ' . chr(40) . 'Capture' . chr(41) . ' *Any ' . chr(125) . chr(10));
+                    if (((Main::isa($stmt, 'Decl') && (($stmt->decl() eq 'has'))) && !(($Hash_meth_seen->{($stmt->var())->name()})))) {
+                        ((my  $meth) = ($stmt->var())->name());
+                        ($str = ($str . ('type ') . $meth . ('_er interface ' . chr(123) . ' f_') . $meth . (' (Capture) *Any ' . chr(125) . chr(10))));
                         ($Hash_meth_seen->{$meth} = 1)
                     }
                 }
             };
-            ($str = $str . chr(10) . 'func main ' . chr(40) . chr(41) . ' ' . chr(123) . chr(10) . '  Init_Perlito__Match' . chr(40) . chr(41) . chr(59) . chr(10));
-            for my $comp_unit ( @{(($comp_units) || []) || []} ) {
-                ($str = $str . '  Init_' . Main::to_go_namespace($comp_unit->name()) . chr(40) . chr(41) . chr(59) . chr(10))
+            ($str = ($str . (chr(10)) . ('func main () ' . chr(123) . chr(10)) . ('  Init_Perlito__Match()' . chr(59) . chr(10))));
+            for my $comp_unit ( @{(($comp_units))} ) {
+                ($str = ($str . ('  Init_') . Main::to_go_namespace($comp_unit->name()) . ('()' . chr(59) . chr(10))))
             };
-            ($str = $str . '  Init_Prelude' . chr(40) . chr(41) . chr(59) . chr(10));
-            for my $comp_unit ( @{(($comp_units) || []) || []} ) {
-                ($str = $str . '  Run_' . Main::to_go_namespace($comp_unit->name()) . chr(40) . chr(41) . chr(59) . chr(10))
+            ($str = ($str . ('  Init_Prelude()' . chr(59) . chr(10))));
+            for my $comp_unit ( @{(($comp_units))} ) {
+                ($str = ($str . ('  Run_') . Main::to_go_namespace($comp_unit->name()) . ('()' . chr(59) . chr(10))))
             };
-            ($str = $str . chr(125) . chr(10));
+            ($str = ($str . chr(125) . (chr(10))));
             return scalar ($str)
         }
     }
@@ -300,7 +300,7 @@ package GLOBAL;
         sub int { $_[0]->{int} };
         sub emit_go {
             my $self = $_[0];
-            'toInt' . chr(40) . $self->{int} . chr(41)
+            ('toInt(' . $self->{int} . ')')
         }
     }
 
@@ -311,7 +311,7 @@ package GLOBAL;
         sub bit { $_[0]->{bit} };
         sub emit_go {
             my $self = $_[0];
-            (Main::bool($self->{bit}) ? 'b_true' . chr(40) . chr(41) : 'b_false' . chr(40) . chr(41))
+            ($self->{bit} ? 'b_true()' : 'b_false()')
         }
     }
 
@@ -322,7 +322,7 @@ package GLOBAL;
         sub num { $_[0]->{num} };
         sub emit_go {
             my $self = $_[0];
-            'toNum' . chr(40) . $self->{num} . chr(41)
+            ('toNum(' . $self->{num} . ')')
         }
     }
 
@@ -333,7 +333,7 @@ package GLOBAL;
         sub buf { $_[0]->{buf} };
         sub emit_go {
             my $self = $_[0];
-            'toStr' . chr(40) . chr(34) . $self->{buf} . chr(34) . chr(41)
+            ('toStr(' . chr(34) . $self->{buf} . chr(34) . ')')
         }
     }
 
@@ -343,7 +343,7 @@ package GLOBAL;
         sub new { shift; bless { @_ }, "Val::Undef" }
         sub emit_go {
             my $self = $_[0];
-            'u_undef' . chr(40) . chr(41)
+            'u_undef()'
         }
     }
 
@@ -366,7 +366,7 @@ package GLOBAL;
         sub array1 { $_[0]->{array1} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $ast = undef) = $self->expand_interpolation());
+            ((my  $ast) = $self->expand_interpolation());
             return scalar ($ast->emit_go())
         }
     }
@@ -378,7 +378,7 @@ package GLOBAL;
         sub hash1 { $_[0]->{hash1} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $ast = undef) = $self->expand_interpolation());
+            ((my  $ast) = $self->expand_interpolation());
             return scalar ($ast->emit_go())
         }
     }
@@ -398,12 +398,12 @@ package GLOBAL;
         sub fields { $_[0]->{fields} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $fields = undef) = $self->{fields});
-            ((my  $str = undef) = '');
-            for my $field ( @{($fields || []) || []} ) {
-                ($str = $str . 'if m.v_' . ($field->[0])->buf(("" . ' ' . chr(61) . chr(61) . ' nil ' . chr(123)) . chr(10) . 'var p Any' . chr(59) . ' ' . chr(10) . 'm.v_' . ($field->[0])->buf(("" . ' ' . chr(61) . ' ' . chr(38) . 'p' . chr(59) . ' ') . chr(10) . chr(125) . chr(10) . '*m.v_' . ($field->[0])->buf(("" . ' ' . chr(61) . ' *') . ($field->[1])->emit_go(("" . chr(59) . ' ') . chr(10))))))
+            ((my  $fields) = $self->{fields});
+            ((my  $str) = '');
+            for my $field ( @{($fields)} ) {
+                ($str = ($str . 'if m.v_' . ($field->[0])->buf() . ' ' . chr(61) . chr(61) . ' nil ' . chr(123) . (chr(10)) . 'var p Any' . chr(59) . ' ' . (chr(10)) . 'm.v_' . ($field->[0])->buf() . ' ' . chr(61) . ' ' . chr(38) . 'p' . chr(59) . ' ' . (chr(10)) . chr(125) . (chr(10)) . '*m.v_' . ($field->[0])->buf() . ' ' . chr(61) . ' *' . ($field->[1])->emit_go() . chr(59) . ' ' . (chr(10))))
             };
-            'func' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' ' . chr(10) . '  var m ' . chr(61) . ' new' . chr(40) . Main::to_go_namespace($self->{class}) . chr(41) . chr(59) . ' ' . chr(10) . '  ' . $str . chr(10) . '  var m1 Any ' . chr(61) . ' m' . chr(59) . ' ' . chr(10) . '  return ' . chr(38) . 'm1' . chr(59) . ' ' . chr(10) . chr(125) . chr(40) . chr(41)
+            ('func() *Any ' . chr(123) . ' ' . (chr(10)) . '  var m ' . chr(61) . ' new(' . Main::to_go_namespace($self->{class}) . ')' . chr(59) . ' ' . (chr(10)) . '  ' . $str . (chr(10)) . '  var m1 Any ' . chr(61) . ' m' . chr(59) . ' ' . (chr(10)) . '  return ' . chr(38) . 'm1' . chr(59) . ' ' . (chr(10)) . chr(125) . '()')
         }
     }
 
@@ -415,7 +415,7 @@ package GLOBAL;
         sub index_exp { $_[0]->{index_exp} };
         sub emit_go {
             my $self = $_[0];
-            chr(40) . '*' . chr(40) . '*' . $self->{obj}->emit_go(("" . chr(41) . '.' . chr(40) . 'array_er' . chr(41) . '.f_array' . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41) . chr(41)) . '.' . chr(40) . 'index_er' . chr(41) . '.f_index' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . $self->{index_exp}->emit_go(("" . ' ' . chr(125) . chr(125) . ' ' . chr(41))))
+            ('(*(*' . $self->{obj}->emit_go() . ').(array_er).f_array(Capture' . chr(123) . chr(125) . '))' . '.(index_er).f_index( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . $self->{index_exp}->emit_go() . ' ' . chr(125) . chr(125) . ' )')
         }
     }
 
@@ -427,7 +427,7 @@ package GLOBAL;
         sub index_exp { $_[0]->{index_exp} };
         sub emit_go {
             my $self = $_[0];
-            chr(40) . '*' . chr(40) . '*' . $self->{obj}->emit_go(("" . chr(41) . '.' . chr(40) . 'hash_er' . chr(41) . '.f_hash' . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41) . chr(41)) . '.' . chr(40) . 'lookup_er' . chr(41) . '.f_lookup' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . $self->{index_exp}->emit_go(("" . ' ' . chr(125) . chr(125) . ' ' . chr(41))))
+            ('(*(*' . $self->{obj}->emit_go() . ').(hash_er).f_hash(Capture' . chr(123) . chr(125) . '))' . '.(lookup_er).f_lookup( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . $self->{index_exp}->emit_go() . ' ' . chr(125) . chr(125) . ' )')
         }
     }
 
@@ -441,24 +441,24 @@ package GLOBAL;
         sub name { $_[0]->{name} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $table = undef) = do {
-    (my  $Hash_a = {});
+            ((my  $table) = do {
+    (my  $Hash_a = bless {}, 'HASH');
     ($Hash_a->{chr(36)} = 'v_');
     ($Hash_a->{chr(64)} = 'List_');
     ($Hash_a->{chr(37)} = 'Hash_');
     ($Hash_a->{chr(38)} = 'Code_');
     $Hash_a
 });
-            ((my  $ns = undef) = '');
-            if (Main::bool($self->{namespace})) {
-                ($ns = Main::to_go_namespace($self->{namespace}) . '.')
+            ((my  $ns) = '');
+            if ($self->{namespace}) {
+                ($ns = (Main::to_go_namespace($self->{namespace}) . '.'))
             };
-            (Main::bool((($self->{twigil} eq '.'))) ? (chr(40) . '*v_self' . chr(41) . '.' . chr(40) . $self->{name} . '_er' . chr(41) . '.f_' . $self->{name} . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41)) : ((Main::bool((($self->{name} eq chr(47)))) ? ('v_MATCH') : ($table->{$self->{sigil}} . $ns . $self->{name}))))
+            ((($self->{twigil} eq '.')) ? (('(*v_self).(' . $self->{name} . '_er).f_' . $self->{name} . '(Capture' . chr(123) . chr(125) . ')')) : (((($self->{name} eq chr(47))) ? ('v_MATCH') : (($table->{$self->{sigil}} . $ns . $self->{name})))))
         };
         sub plain_name {
             my $self = $_[0];
-            if (Main::bool($self->{namespace})) {
-                return scalar ($self->{namespace} . '.' . $self->{name})
+            if ($self->{namespace}) {
+                return scalar (($self->{namespace} . '.' . $self->{name}))
             };
             return scalar ($self->{name})
         }
@@ -472,58 +472,58 @@ package GLOBAL;
         sub arguments { $_[0]->{arguments} };
         sub emit_go {
             my $self = $_[0];
-            if (Main::bool(Main::isa($self->{parameters}, 'Lit::Array'))) {
-                ((my  $a = undef) = $self->{parameters}->array1());
-                ((my  $str = undef) = 'func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' ' . 'List_tmp :' . chr(61) . ' ' . $self->{arguments}->emit_go(("" . chr(59) . ' ')));
-                ((my  $i = undef) = 0);
-                for my $var ( @{($a || []) || []} ) {
-                    ((my  $bind = undef) = Bind->new(('parameters' => $var), ('arguments' => Index->new(('obj' => Var->new(('sigil' => chr(64)), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp'))), ('index_exp' => Val::Int->new(('int' => $i)))))));
-                    ($str = $str . ' ' . $bind->emit_go(("" . chr(59) . ' ')));
+            if (Main::isa($self->{parameters}, 'Lit::Array')) {
+                ((my  $a) = $self->{parameters}->array1());
+                ((my  $str) = ('func () *Any ' . chr(123) . ' ' . 'List_tmp :' . chr(61) . ' ' . $self->{arguments}->emit_go() . chr(59) . ' '));
+                ((my  $i) = 0);
+                for my $var ( @{($a)} ) {
+                    ((my  $bind) = Bind->new(('parameters' => $var), ('arguments' => Index->new(('obj' => Var->new(('sigil' => chr(64)), ('twigil' => ''), ('namespace' => ''), ('name' => 'tmp'))), ('index_exp' => Val::Int->new(('int' => $i)))))));
+                    ($str = ($str . ' ' . $bind->emit_go() . chr(59) . ' '));
                     ($i = ($i + 1))
                 };
-                return scalar ($str . ' return List_tmp ' . chr(125) . chr(40) . chr(41))
+                return scalar (($str . ' return List_tmp ' . chr(125) . '()'))
             };
-            if (Main::bool(Main::isa($self->{parameters}, 'Lit::Hash'))) {
-                ((my  $a = undef) = $self->{parameters}->hash1());
-                ((my  $b = undef) = $self->{arguments}->hash1());
-                ((my  $str = undef) = 'do ' . chr(123) . ' ');
-                ((my  $i = undef) = 0);
-                (my  $arg = undef);
-                for my $var ( @{($a || []) || []} ) {
+            if (Main::isa($self->{parameters}, 'Lit::Hash')) {
+                ((my  $a) = $self->{parameters}->hash1());
+                ((my  $b) = $self->{arguments}->hash1());
+                ((my  $str) = 'do ' . chr(123) . ' ');
+                ((my  $i) = 0);
+                (my  $arg);
+                for my $var ( @{($a)} ) {
                     ($arg = Val::Undef->new());
-                    for my $var2 ( @{($b || []) || []} ) {
-                        if (Main::bool((($var2->[0])->buf() eq ($var->[0])->buf()))) {
+                    for my $var2 ( @{($b)} ) {
+                        if ((($var2->[0])->buf() eq ($var->[0])->buf())) {
                             ($arg = $var2->[1])
                         }
                     };
-                    ((my  $bind = undef) = Bind->new(('parameters' => $var->[1]), ('arguments' => $arg)));
-                    ($str = $str . ' ' . $bind->emit_go(("" . chr(59) . ' ')));
+                    ((my  $bind) = Bind->new(('parameters' => $var->[1]), ('arguments' => $arg)));
+                    ($str = ($str . ' ' . $bind->emit_go() . chr(59) . ' '));
                     ($i = ($i + 1))
                 };
-                return scalar ($str . $self->{parameters}->emit_go(("" . ' ' . chr(125))))
+                return scalar (($str . $self->{parameters}->emit_go() . ' ' . chr(125)))
             };
-            if (Main::bool(Main::isa($self->{parameters}, 'Lit::Object'))) {
-                ((my  $class = undef) = $self->{parameters}->class());
-                ((my  $a = undef) = $self->{parameters}->fields());
-                ((my  $b = undef) = $self->{arguments});
-                ((my  $str = undef) = 'do ' . chr(123) . ' ');
-                ((my  $i = undef) = 0);
-                (my  $arg = undef);
-                for my $var ( @{($a || []) || []} ) {
-                    ((my  $bind = undef) = Bind->new(('parameters' => $var->[1]), ('arguments' => Call->new(('invocant' => $b), ('method' => ($var->[0])->buf()), ('arguments' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            if (Main::isa($self->{parameters}, 'Lit::Object')) {
+                ((my  $class) = $self->{parameters}->class());
+                ((my  $a) = $self->{parameters}->fields());
+                ((my  $b) = $self->{arguments});
+                ((my  $str) = 'do ' . chr(123) . ' ');
+                ((my  $i) = 0);
+                (my  $arg);
+                for my $var ( @{($a)} ) {
+                    ((my  $bind) = Bind->new(('parameters' => $var->[1]), ('arguments' => Call->new(('invocant' => $b), ('method' => ($var->[0])->buf()), ('arguments' => do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     $List_a
 }), ('hyper' => 0)))));
-                    ($str = $str . ' ' . $bind->emit_go(("" . chr(59) . ' ')));
+                    ($str = ($str . ' ' . $bind->emit_go() . chr(59) . ' '));
                     ($i = ($i + 1))
                 };
-                return scalar ($str . $self->{parameters}->emit_go(("" . ' ' . chr(125))))
+                return scalar (($str . $self->{parameters}->emit_go() . ' ' . chr(125)))
             };
-            if (Main::bool(Main::isa($self->{parameters}, 'Call'))) {
-                return scalar ('func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' ' . 'var tmp ' . chr(61) . ' ' . Call::emit_go_call($self->{parameters}->invocant(), $self->{parameters}->method()) . chr(59) . ' ' . '*tmp ' . chr(61) . ' *' . chr(40) . ' ' . $self->{arguments}->emit_go(("" . ' ' . chr(41) . chr(59) . ' ') . 'return tmp' . chr(59) . ' ' . chr(125) . chr(40) . chr(41)))
+            if (Main::isa($self->{parameters}, 'Call')) {
+                return scalar (('func () *Any ' . chr(123) . ' ' . 'var tmp ' . chr(61) . ' ' . Call::emit_go_call($self->{parameters}->invocant(), $self->{parameters}->method()) . chr(59) . ' ' . '*tmp ' . chr(61) . ' *( ' . $self->{arguments}->emit_go() . ' )' . chr(59) . ' ' . 'return tmp' . chr(59) . ' ' . chr(125) . '()'))
             };
-            '*' . $self->{parameters}->emit_go(("" . ' ' . chr(61) . ' *' . chr(40)) . $self->{arguments}->emit_go(("" . chr(41))))
+            ('*' . $self->{parameters}->emit_go() . ' ' . chr(61) . ' *(' . $self->{arguments}->emit_go() . ')')
         }
     }
 
@@ -548,38 +548,38 @@ package GLOBAL;
         sub arguments { $_[0]->{arguments} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $invocant = undef) = $self->{invocant}->emit_go());
-            if (Main::bool(Main::isa(($self->{invocant}), 'Proto'))) {
-                if (Main::bool(($self->{invocant}->name() eq 'self'))) {
+            ((my  $invocant) = $self->{invocant}->emit_go());
+            if (Main::isa(($self->{invocant}), 'Proto')) {
+                if (($self->{invocant}->name() eq 'self')) {
                     ($invocant = 'v_self')
                 }
                 else {
-                    ($invocant = 'Proto_' . $invocant)
+                    ($invocant = ('Proto_' . $invocant))
                 }
             };
-            ((my  $meth = undef) = $self->{method});
-            if (Main::bool(($meth eq 'postcircumfix:' . chr(60) . chr(40) . ' ' . chr(41) . chr(62)))) {
-                if (Main::bool(($self->{hyper}))) {
+            ((my  $meth) = $self->{method});
+            if (($meth eq 'postcircumfix:<( )>')) {
+                if (($self->{hyper})) {
                     ($meth = '')
                 }
                 else {
-                    return scalar (chr(40) . chr(40) . '*' . $invocant . chr(41) . '.' . chr(40) . 'function_er' . chr(41) . '.f_function' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41) . chr(41))
+                    return scalar (('((*' . $invocant . ').(function_er).f_function( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ))'))
                 }
             };
-            if (Main::bool(($self->{hyper}))) {
-                return scalar ('func ' . chr(40) . 'a_ *Any' . chr(41) . ' *Any ' . chr(123) . ' ' . chr(10) . '  var out ' . chr(61) . ' a_array' . chr(40) . chr(41) . chr(59) . ' ' . chr(10) . '  var i ' . chr(61) . ' ' . chr(40) . '*' . chr(40) . '*a_' . chr(41) . '.' . chr(40) . 'array_er' . chr(41) . '.f_array' . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41) . chr(41) . '.' . chr(40) . '*Array' . chr(41) . chr(59) . ' ' . chr(10) . '  for pos :' . chr(61) . ' 0' . chr(59) . ' pos ' . chr(60) . chr(61) . ' i.n' . chr(59) . ' pos++ ' . chr(123) . ' ' . chr(10) . '    ' . chr(40) . '*out' . chr(41) . '.' . chr(40) . 'push_er' . chr(41) . '.f_push' . chr(40) . ' Capture' . chr(123) . 'p: ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . chr(40) . '*i.v' . chr(91) . 'pos' . chr(93) . chr(41) . '.' . chr(40) . $meth . '_er' . chr(41) . '.f_' . $meth . chr(40) . 'Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . chr(125) . '  ' . chr(125) . chr(41) . ' ' . chr(125) . chr(125) . ' ' . chr(41) . chr(10) . '  ' . chr(125) . ' ' . chr(10) . '  return out' . chr(59) . ' ' . chr(10) . chr(125) . chr(40) . $invocant . chr(41))
+            if (($self->{hyper})) {
+                return scalar (('func (a_ *Any) *Any ' . chr(123) . ' ' . (chr(10)) . '  var out ' . chr(61) . ' a_array()' . chr(59) . ' ' . (chr(10)) . '  var i ' . chr(61) . ' (*(*a_).(array_er).f_array(Capture' . chr(123) . chr(125) . ')).(*Array)' . chr(59) . ' ' . (chr(10)) . '  for pos :' . chr(61) . ' 0' . chr(59) . ' pos <' . chr(61) . ' i.n' . chr(59) . ' pos++ ' . chr(123) . ' ' . (chr(10)) . '    (*out).(push_er).f_push( Capture' . chr(123) . 'p: []*Any' . chr(123) . ' (*i.v[pos]).(' . $meth . '_er).f_' . $meth . '(Capture' . chr(123) . ' p : []*Any' . chr(123) . chr(125) . '  ' . chr(125) . ') ' . chr(125) . chr(125) . ' )' . (chr(10)) . '  ' . chr(125) . ' ' . (chr(10)) . '  return out' . chr(59) . ' ' . (chr(10)) . chr(125) . '(' . $invocant . ')'))
             };
-            return scalar (chr(40) . '*' . $invocant . chr(41) . '.' . chr(40) . $meth . '_er' . chr(41) . '.f_' . $meth . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            return scalar (('(*' . $invocant . ').(' . $meth . '_er).f_' . $meth . '( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
         };
         sub emit_go_call {
             my $invocant = $_[0];
             my $meth_name = $_[1];
-            ((my  $invocant1 = undef) = $invocant->emit_go());
-            if (Main::bool(Main::isa(($invocant), 'Proto'))) {
-                ($invocant1 = 'Proto_' . $invocant1)
+            ((my  $invocant1) = $invocant->emit_go());
+            if (Main::isa(($invocant), 'Proto')) {
+                ($invocant1 = ('Proto_' . $invocant1))
             };
-            ((my  $meth = undef) = $meth_name);
-            return scalar (chr(40) . '*' . $invocant1 . chr(41) . '.' . chr(40) . $meth . '_er' . chr(41) . '.f_' . $meth . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41))
+            ((my  $meth) = $meth_name);
+            return scalar (('(*' . $invocant1 . ').(' . $meth . '_er).f_' . $meth . '(Capture' . chr(123) . chr(125) . ')'))
         }
     }
 
@@ -592,147 +592,147 @@ package GLOBAL;
         sub namespace { $_[0]->{namespace} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $code = undef) = $self->{code});
-            if (Main::bool(Main::isa($code, 'Str'))) {
+            ((my  $code) = $self->{code});
+            if (Main::isa($code, 'Str')) {
 
             }
             else {
-                return scalar (chr(40) . $self->{code}->emit_go(("" . chr(41) . '-' . chr(62) . chr(40)) . Main::join(([ map { $_->emit() } @{( $self->{arguments} )} ]), ', ') . chr(41)))
+                return scalar (('(' . $self->{code}->emit_go() . ')->(' . Main::join(([ map { $_->emit() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'self'))) {
+            if (($code eq 'self')) {
                 return scalar ('v_self')
             };
-            if (Main::bool(($code eq 'False'))) {
-                return scalar ('b_false' . chr(40) . chr(41))
+            if (($code eq 'False')) {
+                return scalar ('b_false()')
             };
-            if (Main::bool(($code eq 'True'))) {
-                return scalar ('b_true' . chr(40) . chr(41))
+            if (($code eq 'True')) {
+                return scalar ('b_true()')
             };
-            if (Main::bool(($code eq 'make'))) {
-                return scalar ('func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' ' . 'tmp :' . chr(61) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . chr(59) . ' ' . '*' . chr(40) . '*v_MATCH' . chr(41) . '.' . chr(40) . 'capture_er' . chr(41) . '.f_capture' . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41) . ' ' . chr(61) . ' *tmp' . chr(59) . ' ' . 'return tmp' . chr(59) . ' ' . chr(125) . chr(40) . chr(41))
+            if (($code eq 'make')) {
+                return scalar (('func () *Any ' . chr(123) . ' ' . 'tmp :' . chr(61) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . chr(59) . ' ' . '*(*v_MATCH).(capture_er).f_capture(Capture' . chr(123) . chr(125) . ') ' . chr(61) . ' *tmp' . chr(59) . ' ' . 'return tmp' . chr(59) . ' ' . chr(125) . '()'))
             };
-            if (Main::bool(($code eq 'go'))) {
-                return scalar ('go func ' . chr(40) . chr(41) . ' ' . chr(123) . ' ' . chr(10) . '        ' . (Perlito::Go::LexicalBlock->new(('block' => ($self->{arguments}->[0])->block()), ('needs_return' => 0), ('top_level' => 1)))->emit_go(("" . chr(10)) . '    ' . chr(125) . chr(40) . chr(41)))
+            if (($code eq 'go')) {
+                return scalar (('go func () ' . chr(123) . ' ' . (chr(10)) . '        ' . (Perlito::Go::LexicalBlock->new(('block' => ($self->{arguments}->[0])->block()), ('needs_return' => 0), ('top_level' => 1)))->emit_go() . (chr(10)) . '    ' . chr(125) . '()'))
             };
-            if (Main::bool(($code eq 'say'))) {
-                return scalar ('f_print' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ', toStr' . chr(40) . chr(34) . chr(92) . 'n' . chr(34) . chr(41) . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'say')) {
+                return scalar (('f_print( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ', toStr(' . chr(34) . chr(92) . 'n' . chr(34) . ') ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'print'))) {
-                return scalar ('f_print' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'print')) {
+                return scalar (('f_print( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'warn'))) {
-                return scalar ('f_print_stderr' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ', toStr' . chr(40) . chr(34) . chr(92) . 'n' . chr(34) . chr(41) . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'warn')) {
+                return scalar (('f_print_stderr( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ', toStr(' . chr(34) . chr(92) . 'n' . chr(34) . ') ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'die'))) {
-                return scalar ('f_die' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'die')) {
+                return scalar (('f_die( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'defined'))) {
-                return scalar ('f_defined' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'defined')) {
+                return scalar (('f_defined( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'pop'))) {
-                return scalar ('f_pop' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'pop')) {
+                return scalar (('f_pop( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'push'))) {
-                return scalar ('f_push' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'push')) {
+                return scalar (('f_push( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'shift'))) {
-                return scalar ('f_shift' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'shift')) {
+                return scalar (('f_shift( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'index'))) {
-                return scalar ('f_index' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'index')) {
+                return scalar (('f_index( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'substr'))) {
-                return scalar ('f_substr' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'substr')) {
+                return scalar (('f_substr( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'scalar'))) {
-                return scalar ('f_scalar' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'scalar')) {
+                return scalar (('f_scalar( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'Int'))) {
-                return scalar ('toInt' . chr(40) . 'toint' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41)) . chr(41)))
+            if (($code eq 'Int')) {
+                return scalar (('toInt(' . 'toint(' . ($self->{arguments}->[0])->emit_go() . ')' . ')'))
             };
-            if (Main::bool(($code eq 'Num'))) {
-                return scalar ('toNum' . chr(40) . 'tonum' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41)) . chr(41)))
+            if (($code eq 'Num')) {
+                return scalar (('toNum(' . 'tonum(' . ($self->{arguments}->[0])->emit_go() . ')' . ')'))
             };
-            if (Main::bool(($code eq 'exists'))) {
-                ((my  $arg = undef) = $self->{arguments}->[0]);
-                if (Main::bool(Main::isa($arg, 'Lookup'))) {
-                    return scalar (chr(40) . '*' . ($arg->obj())->emit_go(("" . chr(41)) . '.' . chr(40) . 'exists_er' . chr(41) . '.f_exists' . chr(40) . 'Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . ($arg->index_exp())->emit_go(("" . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41)))))
+            if (($code eq 'exists')) {
+                ((my  $arg) = $self->{arguments}->[0]);
+                if (Main::isa($arg, 'Lookup')) {
+                    return scalar (('(*' . ($arg->obj())->emit_go() . ')' . '.(exists_er).f_exists(Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . ($arg->index_exp())->emit_go() . ' ' . chr(125) . ' ' . chr(125) . ' )'))
                 }
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(126) . chr(62)))) {
+            if (($code eq 'prefix:<' . chr(126) . '>')) {
                 return scalar (Call::emit_go_call($self->{arguments}->[0], 'Str'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(33) . chr(62)))) {
-                return scalar ('toBool' . chr(40) . chr(33) . 'tobool' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41) . chr(41))))
+            if (($code eq 'prefix:<' . chr(33) . '>')) {
+                return scalar (('toBool(' . chr(33) . 'tobool(' . ($self->{arguments}->[0])->emit_go() . '))'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(63) . chr(62)))) {
+            if (($code eq 'prefix:<' . chr(63) . '>')) {
                 return scalar (Call::emit_go_call($self->{arguments}->[0], 'Bool'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(36) . chr(62)))) {
-                return scalar ('f_scalar' . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41))
+            if (($code eq 'prefix:<' . chr(36) . '>')) {
+                return scalar (('f_scalar( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(64) . chr(62)))) {
+            if (($code eq 'prefix:<' . chr(64) . '>')) {
                 return scalar (Call::emit_go_call($self->{arguments}->[0], 'array'))
             };
-            if (Main::bool(($code eq 'prefix:' . chr(60) . chr(37) . chr(62)))) {
+            if (($code eq 'prefix:<' . chr(37) . '>')) {
                 return scalar (Call::emit_go_call($self->{arguments}->[0], 'hash'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(126) . chr(62)))) {
-                return scalar ('toStr' . chr(40) . ' ' . 'tostr' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41) . ' + ') . 'tostr' . chr(40) . ($self->{arguments}->[1])->emit_go(("" . chr(41) . ' ') . chr(41))))
+            if (($code eq 'infix:<' . chr(126) . '>')) {
+                return scalar (('toStr( ' . 'tostr(' . ($self->{arguments}->[0])->emit_go() . ') + ' . 'tostr(' . ($self->{arguments}->[1])->emit_go() . ') ' . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . '+' . chr(62)))) {
-                return scalar ('f_add' . chr(40) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (($code eq 'infix:<+>')) {
+                return scalar (('f_add( ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . '-' . chr(62)))) {
-                return scalar ('f_sub' . chr(40) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (($code eq 'infix:<->')) {
+                return scalar (('f_sub( ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . '*' . chr(62)))) {
-                return scalar ('f_mul' . chr(40) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (($code eq 'infix:<*>')) {
+                return scalar (('f_mul( ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(47) . chr(62)))) {
-                return scalar ('f_div' . chr(40) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (($code eq 'infix:<' . chr(47) . '>')) {
+                return scalar (('f_div( ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(62) . chr(62)))) {
-                return scalar ('f_greater' . chr(40) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (($code eq 'infix:<>>')) {
+                return scalar (('f_greater( ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(60) . chr(62)))) {
-                return scalar ('f_smaller' . chr(40) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . chr(41))
+            if (($code eq 'infix:<<>')) {
+                return scalar (('f_smaller( ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(62) . chr(61) . chr(62)))) {
-                return scalar ('toBool' . chr(40) . ' ' . 'toint' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41) . ' ' . chr(62) . chr(61) . ' ') . 'toint' . chr(40) . ($self->{arguments}->[1])->emit_go(("" . chr(41) . ' ') . chr(41))))
+            if (($code eq 'infix:<>' . chr(61) . '>')) {
+                return scalar (('toBool( ' . 'toint(' . ($self->{arguments}->[0])->emit_go() . ') >' . chr(61) . ' ' . 'toint(' . ($self->{arguments}->[1])->emit_go() . ') ' . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(60) . chr(61) . chr(62)))) {
-                return scalar ('toBool' . chr(40) . ' ' . 'toint' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41) . ' ' . chr(60) . chr(61) . ' ') . 'toint' . chr(40) . ($self->{arguments}->[1])->emit_go(("" . chr(41) . ' ') . chr(41))))
+            if (($code eq 'infix:<<' . chr(61) . '>')) {
+                return scalar (('toBool( ' . 'toint(' . ($self->{arguments}->[0])->emit_go() . ') <' . chr(61) . ' ' . 'toint(' . ($self->{arguments}->[1])->emit_go() . ') ' . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(38) . chr(38) . chr(62)))) {
-                return scalar ('f_and' . chr(40) . ' ' . 'func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' return ' . ($self->{arguments}->[0])->emit_go(("" . ' ' . chr(125) . ', ') . 'func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' return ' . ($self->{arguments}->[1])->emit_go(("" . ' ' . chr(125) . ' ') . chr(41))))
+            if (($code eq 'infix:<' . chr(38) . chr(38) . '>')) {
+                return scalar (('f_and( ' . 'func () *Any ' . chr(123) . ' return ' . ($self->{arguments}->[0])->emit_go() . ' ' . chr(125) . ', ' . 'func () *Any ' . chr(123) . ' return ' . ($self->{arguments}->[1])->emit_go() . ' ' . chr(125) . ' ' . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(124) . chr(124) . chr(62)))) {
-                return scalar ('f_or' . chr(40) . ' ' . 'func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' return ' . ($self->{arguments}->[0])->emit_go(("" . ' ' . chr(125) . ', ') . 'func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' return ' . ($self->{arguments}->[1])->emit_go(("" . ' ' . chr(125) . ' ') . chr(41))))
+            if (($code eq 'infix:<' . chr(124) . chr(124) . '>')) {
+                return scalar (('f_or( ' . 'func () *Any ' . chr(123) . ' return ' . ($self->{arguments}->[0])->emit_go() . ' ' . chr(125) . ', ' . 'func () *Any ' . chr(123) . ' return ' . ($self->{arguments}->[1])->emit_go() . ' ' . chr(125) . ' ' . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . 'eq' . chr(62)))) {
-                return scalar ('toBool' . chr(40) . 'tostr' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41) . ' ' . chr(61) . chr(61) . ' ') . 'tostr' . chr(40) . ($self->{arguments}->[1])->emit_go(("" . chr(41)) . chr(41))))
+            if (($code eq 'infix:<eq>')) {
+                return scalar (('toBool(' . 'tostr(' . ($self->{arguments}->[0])->emit_go() . ') ' . chr(61) . chr(61) . ' ' . 'tostr(' . ($self->{arguments}->[1])->emit_go() . ')' . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . 'ne' . chr(62)))) {
-                return scalar ('toBool' . chr(40) . 'tostr' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41) . ' ' . chr(33) . chr(61) . ' ') . 'tostr' . chr(40) . ($self->{arguments}->[1])->emit_go(("" . chr(41)) . chr(41))))
+            if (($code eq 'infix:<ne>')) {
+                return scalar (('toBool(' . 'tostr(' . ($self->{arguments}->[0])->emit_go() . ') ' . chr(33) . chr(61) . ' ' . 'tostr(' . ($self->{arguments}->[1])->emit_go() . ')' . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(61) . chr(61) . chr(62)))) {
-                return scalar ('toBool' . chr(40) . 'toint' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41) . ' ' . chr(61) . chr(61) . ' ') . 'toint' . chr(40) . ($self->{arguments}->[1])->emit_go(("" . chr(41) . ' ') . chr(41))))
+            if (($code eq 'infix:<' . chr(61) . chr(61) . '>')) {
+                return scalar (('toBool(' . 'toint(' . ($self->{arguments}->[0])->emit_go() . ') ' . chr(61) . chr(61) . ' ' . 'toint(' . ($self->{arguments}->[1])->emit_go() . ') ' . ')'))
             };
-            if (Main::bool(($code eq 'infix:' . chr(60) . chr(33) . chr(61) . chr(62)))) {
-                return scalar ('toBool' . chr(40) . 'toint' . chr(40) . ($self->{arguments}->[0])->emit_go(("" . chr(41) . ' ' . chr(33) . chr(61) . ' ') . 'toint' . chr(40) . ($self->{arguments}->[1])->emit_go(("" . chr(41) . ' ') . chr(41))))
+            if (($code eq 'infix:<' . chr(33) . chr(61) . '>')) {
+                return scalar (('toBool(' . 'toint(' . ($self->{arguments}->[0])->emit_go() . ') ' . chr(33) . chr(61) . ' ' . 'toint(' . ($self->{arguments}->[1])->emit_go() . ') ' . ')'))
             };
-            if (Main::bool(($code eq 'ternary:' . chr(60) . chr(63) . chr(63) . ' ' . chr(33) . chr(33) . chr(62)))) {
-                return scalar ('func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' ' . 'if tobool' . chr(40) . ' ' . Call::emit_go_call($self->{arguments}->[0], 'Bool') . ' ' . chr(41) . ' ' . chr(123) . ' return ' . ($self->{arguments}->[1])->emit_go(("" . ' ' . chr(125) . chr(59) . ' ') . 'return ' . ($self->{arguments}->[2])->emit_go(("" . ' ') . chr(125) . chr(40) . chr(41))))
+            if (($code eq 'ternary:<' . chr(63) . chr(63) . ' ' . chr(33) . chr(33) . '>')) {
+                return scalar (('func () *Any ' . chr(123) . ' ' . 'if tobool( ' . Call::emit_go_call($self->{arguments}->[0], 'Bool') . ' ) ' . chr(123) . ' return ' . ($self->{arguments}->[1])->emit_go() . ' ' . chr(125) . chr(59) . ' ' . 'return ' . ($self->{arguments}->[2])->emit_go() . ' ' . chr(125) . '()'))
             };
-            ($code = 'f_' . $self->{code});
-            if (Main::bool($self->{namespace})) {
-                ($code = 'Namespace_' . Main::to_go_namespace($self->{namespace}) . '.' . $code)
+            ($code = ('f_' . $self->{code}));
+            if ($self->{namespace}) {
+                ($code = ('Namespace_' . Main::to_go_namespace($self->{namespace}) . '.' . $code))
             }
             else {
-                ($code = 'this_namespace.' . $code)
+                ($code = ('this_namespace.' . $code))
             };
-            $code . chr(40) . ' Capture' . chr(123) . ' p : ' . chr(91) . chr(93) . '*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' ' . chr(41)
+            ($code . '( Capture' . chr(123) . ' p : []*Any' . chr(123) . ' ' . Main::join(([ map { $_->emit_go() } @{( $self->{arguments} )} ]), ', ') . ' ' . chr(125) . ' ' . chr(125) . ' )')
         }
     }
 
@@ -743,19 +743,19 @@ package GLOBAL;
         sub result { $_[0]->{result} };
         sub emit_go {
             my $self = $_[0];
-            if (Main::bool(Main::isa(($self->{result}), 'Bind'))) {
-                ((my  $tmp = undef) = ($self->{result})->parameters());
-                return scalar (chr(40) . 'func ' . chr(40) . chr(41) . ' ' . chr(123) . ' ' . ($self->{result})->emit_go(("" . chr(59) . ' ') . 'p ' . chr(60) . '- ' . $tmp->emit_go(("" . chr(59) . ' ') . 'runtime.Goexit' . chr(40) . chr(41) . chr(59) . ' ' . chr(125) . chr(40) . chr(41) . chr(41))))
+            if (Main::isa(($self->{result}), 'Bind')) {
+                ((my  $tmp) = ($self->{result})->parameters());
+                return scalar (('(func () ' . chr(123) . ' ' . ($self->{result})->emit_go() . chr(59) . ' ' . 'p <- ' . $tmp->emit_go() . chr(59) . ' ' . 'runtime.Goexit()' . chr(59) . ' ' . chr(125) . '())'))
             };
-            return scalar (chr(40) . 'func ' . chr(40) . chr(41) . ' ' . chr(123) . ' ' . 'var tmp *Any ' . chr(61) . ' ' . ($self->{result})->emit_go(("" . chr(59) . ' ') . 'p ' . chr(60) . '- tmp' . chr(59) . ' ' . 'runtime.Goexit' . chr(40) . chr(41) . chr(59) . ' ' . chr(125) . chr(40) . chr(41) . chr(41)))
+            return scalar (('(func () ' . chr(123) . ' ' . 'var tmp *Any ' . chr(61) . ' ' . ($self->{result})->emit_go() . chr(59) . ' ' . 'p <- tmp' . chr(59) . ' ' . 'runtime.Goexit()' . chr(59) . ' ' . chr(125) . '())'))
         };
         sub emit_go_simple {
             my $self = $_[0];
-            if (Main::bool(Main::isa(($self->{result}), 'Bind'))) {
-                ((my  $tmp = undef) = ($self->{result})->parameters());
-                return scalar ('return ' . chr(40) . 'func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' ' . ($self->{result})->emit_go(("" . chr(59) . ' ') . 'return ' . $tmp->emit_go(("" . chr(59) . ' ') . chr(125) . chr(40) . chr(41) . chr(41))))
+            if (Main::isa(($self->{result}), 'Bind')) {
+                ((my  $tmp) = ($self->{result})->parameters());
+                return scalar (('return (func () *Any ' . chr(123) . ' ' . ($self->{result})->emit_go() . chr(59) . ' ' . 'return ' . $tmp->emit_go() . chr(59) . ' ' . chr(125) . '())'))
             };
-            return scalar ('return' . chr(40) . ' ' . $self->{result}->emit_go(("" . chr(41))))
+            return scalar (('return( ' . $self->{result}->emit_go() . ')'))
         }
     }
 
@@ -768,24 +768,24 @@ package GLOBAL;
         sub otherwise { $_[0]->{otherwise} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $cond = undef) = $self->{cond});
-            if (Main::bool((Main::isa($cond, 'Apply') && ($cond->code() eq 'prefix:' . chr(60) . chr(33) . chr(62))))) {
-                ((my  $if = undef) = If->new(('cond' => ($cond->arguments())->[0]), ('body' => $self->{otherwise}), ('otherwise' => $self->{body})));
+            ((my  $cond) = $self->{cond});
+            if ((Main::isa($cond, 'Apply') && ($cond->code() eq 'prefix:<' . chr(33) . '>'))) {
+                ((my  $if) = If->new(('cond' => ($cond->arguments())->[0]), ('body' => $self->{otherwise}), ('otherwise' => $self->{body})));
                 return scalar ($if->emit_go())
             };
-            if (Main::bool((Main::isa($cond, 'Var') && ($cond->sigil() eq chr(64))))) {
-                ($cond = Apply->new(('code' => 'prefix:' . chr(60) . chr(64) . chr(62)), ('arguments' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            if ((Main::isa($cond, 'Var') && ($cond->sigil() eq chr(64)))) {
+                ($cond = Apply->new(('code' => 'prefix:<' . chr(64) . '>'), ('arguments' => do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $cond );
     $List_a
 })))
             };
-            ((my  $s = undef) = 'if tobool' . chr(40) . ' ' . Call::emit_go_call($cond, 'Bool') . ' ' . chr(41) . ' ' . chr(123) . ' ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{body}), ('needs_return' => 0)))->emit_go(("" . ' ' . chr(125))));
-            if (Main::bool(!Main::bool(($self->{otherwise})))) {
+            ((my  $s) = ('if tobool( ' . Call::emit_go_call($cond, 'Bool') . ' ) ' . chr(123) . ' ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{body}), ('needs_return' => 0)))->emit_go() . ' ' . chr(125)));
+            if (!(($self->{otherwise}))) {
                 return scalar ($s)
             };
-            return scalar ($s . ' else ' . chr(123) . ' ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{otherwise}), ('needs_return' => 0)))->emit_go(("" . ' ' . chr(125))))
+            return scalar (($s . ' else ' . chr(123) . ' ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{otherwise}), ('needs_return' => 0)))->emit_go() . ' ' . chr(125)))
         }
     }
 
@@ -798,7 +798,7 @@ package GLOBAL;
         sub topic { $_[0]->{topic} };
         sub emit_go {
             my $self = $_[0];
-            'func ' . chr(40) . 'a_ *Any' . chr(41) . ' ' . chr(123) . ' ' . chr(10) . '  var i ' . chr(61) . ' ' . chr(40) . '*' . chr(40) . '*a_' . chr(41) . '.' . chr(40) . 'array_er' . chr(41) . '.f_array' . chr(40) . 'Capture' . chr(123) . chr(125) . chr(41) . chr(41) . '.' . chr(40) . '*Array' . chr(41) . chr(59) . ' ' . chr(10) . '  for pos :' . chr(61) . ' 0' . chr(59) . ' pos ' . chr(60) . chr(61) . ' i.n' . chr(59) . ' pos++ ' . chr(123) . ' ' . chr(10) . '    func ' . chr(40) . $self->{topic}->emit_go(("" . ' *Any' . chr(41) . ' ' . chr(123) . ' ') . chr(10) . '      ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{body}), ('needs_return' => 0)))->emit_go(("" . chr(10)) . '    ' . chr(125) . chr(40) . 'i.v' . chr(91) . 'pos' . chr(93) . chr(41) . ' ' . chr(10) . '  ' . chr(125) . ' ' . chr(10) . chr(125) . chr(40) . $self->{cond}->emit_go(("" . chr(41)))))
+            ('func (a_ *Any) ' . chr(123) . ' ' . (chr(10)) . '  var i ' . chr(61) . ' (*(*a_).(array_er).f_array(Capture' . chr(123) . chr(125) . ')).(*Array)' . chr(59) . ' ' . (chr(10)) . '  for pos :' . chr(61) . ' 0' . chr(59) . ' pos <' . chr(61) . ' i.n' . chr(59) . ' pos++ ' . chr(123) . ' ' . (chr(10)) . '    func (' . $self->{topic}->emit_go() . ' *Any) ' . chr(123) . ' ' . (chr(10)) . '      ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{body}), ('needs_return' => 0)))->emit_go() . (chr(10)) . '    ' . chr(125) . '(i.v[pos]) ' . (chr(10)) . '  ' . chr(125) . ' ' . (chr(10)) . chr(125) . '(' . $self->{cond}->emit_go() . ')')
         }
     }
 
@@ -810,7 +810,7 @@ package GLOBAL;
         sub body { $_[0]->{body} };
         sub emit_go {
             my $self = $_[0];
-            die('TODO - When')
+            die(('TODO - When'))
         }
     }
 
@@ -824,16 +824,16 @@ package GLOBAL;
         sub body { $_[0]->{body} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $cond = undef) = $self->{cond});
-            if (Main::bool((Main::isa($cond, 'Var') && ($cond->sigil() eq chr(64))))) {
-                ($cond = Apply->new(('code' => 'prefix:' . chr(60) . chr(64) . chr(62)), ('arguments' => do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $cond) = $self->{cond});
+            if ((Main::isa($cond, 'Var') && ($cond->sigil() eq chr(64)))) {
+                ($cond = Apply->new(('code' => 'prefix:<' . chr(64) . '>'), ('arguments' => do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $cond );
     $List_a
 })))
             };
-            return scalar ('for ' . ((Main::bool($self->{init}) ? $self->{init}->emit_go(("" . chr(59) . ' ')) : chr(59))) . 'tobool' . chr(40) . ' ' . Call::emit_go_call($cond, 'Bool') . ' ' . chr(41) . chr(59) . ' ' . ((Main::bool($self->{continue}) ? $self->{continue}->emit_go(("" . ' ')) : '')) . chr(123) . ' ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{body}), ('needs_return' => 0)))->emit_go(("" . ' ' . chr(125))))
+            return scalar (('for ' . (($self->{init} ? ($self->{init}->emit_go() . chr(59) . ' ') : chr(59))) . 'tobool( ' . Call::emit_go_call($cond, 'Bool') . ' )' . chr(59) . ' ' . (($self->{continue} ? ($self->{continue}->emit_go() . ' ') : '')) . chr(123) . ' ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{body}), ('needs_return' => 0)))->emit_go() . ' ' . chr(125)))
         }
     }
 
@@ -846,29 +846,29 @@ package GLOBAL;
         sub var { $_[0]->{var} };
         sub emit_go {
             my $self = $_[0];
-$self->{var}->emit_go()
+            $self->{var}->emit_go()
         };
         sub emit_go_init {
             my $self = $_[0];
-            if (Main::bool(($self->{decl} eq 'my'))) {
-                ((my  $str = undef) = '');
-                ($str = $str . 'var ' . ($self->{var})->emit_go(("" . ' *Any' . chr(59)) . chr(10)));
-                ($str = $str . ($self->{var})->emit_go(("" . ' ' . chr(61) . ' ') . ($self->{var})->emit_go(("" . chr(59)) . chr(10))));
-                if (Main::bool((($self->{var})->sigil() eq chr(37)))) {
-                    ($str = $str . ($self->{var})->emit_go(("" . ' ' . chr(61) . ' h_hash' . chr(40) . chr(41) . chr(59)) . chr(10)))
+            if (($self->{decl} eq 'my')) {
+                ((my  $str) = '');
+                ($str = ($str . 'var ' . ($self->{var})->emit_go() . ' *Any' . chr(59) . (chr(10))));
+                ($str = ($str . ($self->{var})->emit_go() . ' ' . chr(61) . ' ' . ($self->{var})->emit_go() . chr(59) . (chr(10))));
+                if ((($self->{var})->sigil() eq chr(37))) {
+                    ($str = ($str . ($self->{var})->emit_go() . ' ' . chr(61) . ' h_hash()' . chr(59) . (chr(10))))
                 }
                 else {
-                    if (Main::bool((($self->{var})->sigil() eq chr(64)))) {
-                        ($str = $str . ($self->{var})->emit_go(("" . ' ' . chr(61) . ' a_array' . chr(40) . chr(41) . chr(59)) . chr(10)))
+                    if ((($self->{var})->sigil() eq chr(64))) {
+                        ($str = ($str . ($self->{var})->emit_go() . ' ' . chr(61) . ' a_array()' . chr(59) . (chr(10))))
                     }
                     else {
-                        ($str = $str . ($self->{var})->emit_go(("" . ' ' . chr(61) . ' u_undef' . chr(40) . chr(41) . chr(59)) . chr(10)))
+                        ($str = ($str . ($self->{var})->emit_go() . ' ' . chr(61) . ' u_undef()' . chr(59) . (chr(10))))
                     }
                 };
                 return scalar ($str)
             }
             else {
-                die('not implemented: Decl ' . chr(39) . $self->{decl} . chr(39))
+                die(('not implemented: Decl ' . chr(39) . $self->{decl} . (chr(39))))
             }
         }
     }
@@ -886,11 +886,11 @@ $self->{var}->emit_go()
         };
         sub emit_go_bind {
             my $self = $_[0];
-            ((my  $str = undef) = '');
-            ((my  $i = undef) = 0);
-            for my $decl ( @{(($self->{positional}) || []) || []} ) {
-                ($str = $str . '  var ' . $decl->emit_go(("" . ' *Any' . chr(59) . chr(10)) . '  if len' . chr(40) . 'v.p' . chr(41) . ' ' . chr(62) . ' ' . $i . ' ' . chr(123) . chr(10) . '    ' . $decl->emit_go(("" . ' ' . chr(61) . ' v.p' . chr(91)) . $i . chr(93) . chr(59) . chr(10) . '  ' . chr(125) . chr(10))));
-                ($str = $str . $decl->emit_go(("" . ' ' . chr(61) . ' ') . $decl->emit_go(("" . chr(59) . ' '))));
+            ((my  $str) = '');
+            ((my  $i) = 0);
+            for my $decl ( @{(($self->{positional}))} ) {
+                ($str = ($str . ('  var ') . $decl->emit_go() . (' *Any' . chr(59) . chr(10)) . ('  if len(v.p) > ') . $i . (' ' . chr(123) . chr(10)) . ('    ') . $decl->emit_go() . (' ' . chr(61) . ' v.p[') . $i . (']' . chr(59) . chr(10)) . ('  ' . chr(125) . chr(10))));
+                ($str = ($str . $decl->emit_go() . ' ' . chr(61) . ' ' . $decl->emit_go() . chr(59) . ' '));
                 ($i = ($i + 1))
             };
             return scalar ($str)
@@ -906,8 +906,8 @@ $self->{var}->emit_go()
         sub block { $_[0]->{block} };
         sub emit_go {
             my $self = $_[0];
-            ((my  $invocant = undef) = ($self->{sig})->invocant());
-            'func ' . $self->{name} . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123) . ' ' . '    ' . ($self->{sig})->emit_go_bind(("" . chr(10)) . '    p :' . chr(61) . ' make' . chr(40) . 'chan *Any' . chr(41) . chr(59) . ' go func ' . chr(40) . chr(41) . ' ' . chr(123) . ' ' . chr(10) . '        ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1), ('top_level' => 1)))->emit_go(("" . chr(59) . ' p ' . chr(60) . '- nil ' . chr(125) . chr(40) . chr(41) . chr(59) . ' ') . chr(10) . '    return ' . chr(60) . '-p' . chr(59) . ' ' . chr(10) . ' ' . chr(125)))
+            ((my  $invocant) = ($self->{sig})->invocant());
+            ('func ' . $self->{name} . '(v Capture) *Any ' . chr(123) . ' ' . '    ' . ($self->{sig})->emit_go_bind() . (chr(10)) . '    p :' . chr(61) . ' make(chan *Any)' . chr(59) . ' go func () ' . chr(123) . ' ' . (chr(10)) . '        ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1), ('top_level' => 1)))->emit_go() . chr(59) . ' p <- nil ' . chr(125) . '()' . chr(59) . ' ' . (chr(10)) . '    return <-p' . chr(59) . ' ' . (chr(10)) . ' ' . chr(125))
         }
     }
 
@@ -920,10 +920,10 @@ $self->{var}->emit_go()
         sub block { $_[0]->{block} };
         sub emit_go {
             my $self = $_[0];
-            if (Main::bool(($self->{name} eq ''))) {
-                return scalar ('toFunction' . chr(40) . ' func' . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123) . ' ' . '    ' . ($self->{sig})->emit_go_bind(("" . chr(10)) . '    p :' . chr(61) . ' make' . chr(40) . 'chan *Any' . chr(41) . chr(59) . ' go func ' . chr(40) . chr(41) . ' ' . chr(123) . ' ' . chr(10) . '        ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1), ('top_level' => 1)))->emit_go(("" . chr(59) . ' p ' . chr(60) . '- nil ' . chr(125) . chr(40) . chr(41) . chr(59) . ' ') . chr(10) . '    return ' . chr(60) . '-p' . chr(59) . ' ' . chr(10) . chr(125) . ' ' . chr(41))))
+            if (($self->{name} eq '')) {
+                return scalar (('toFunction( func(v Capture) *Any ' . chr(123) . ' ' . '    ' . ($self->{sig})->emit_go_bind() . (chr(10)) . '    p :' . chr(61) . ' make(chan *Any)' . chr(59) . ' go func () ' . chr(123) . ' ' . (chr(10)) . '        ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1), ('top_level' => 1)))->emit_go() . chr(59) . ' p <- nil ' . chr(125) . '()' . chr(59) . ' ' . (chr(10)) . '    return <-p' . chr(59) . ' ' . (chr(10)) . chr(125) . ' ' . ')'))
             };
-            'func ' . $self->{name} . chr(40) . 'v Capture' . chr(41) . ' *Any ' . chr(123) . ' ' . '    ' . ($self->{sig})->emit_go_bind(("" . chr(10)) . '    p :' . chr(61) . ' make' . chr(40) . 'chan *Any' . chr(41) . chr(59) . ' go func ' . chr(40) . chr(41) . ' ' . chr(123) . ' ' . chr(10) . '        ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1), ('top_level' => 1)))->emit_go(("" . chr(59) . ' p ' . chr(60) . '- nil ' . chr(125) . chr(40) . chr(41) . chr(59) . ' ') . chr(10) . '    return ' . chr(60) . '-p' . chr(59) . ' ' . chr(10) . ' ' . chr(125)))
+            ('func ' . $self->{name} . '(v Capture) *Any ' . chr(123) . ' ' . '    ' . ($self->{sig})->emit_go_bind() . (chr(10)) . '    p :' . chr(61) . ' make(chan *Any)' . chr(59) . ' go func () ' . chr(123) . ' ' . (chr(10)) . '        ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1), ('top_level' => 1)))->emit_go() . chr(59) . ' p <- nil ' . chr(125) . '()' . chr(59) . ' ' . (chr(10)) . '    return <-p' . chr(59) . ' ' . (chr(10)) . ' ' . chr(125))
         }
     }
 
@@ -934,7 +934,7 @@ $self->{var}->emit_go()
         sub block { $_[0]->{block} };
         sub emit_go {
             my $self = $_[0];
-            chr(40) . 'func ' . chr(40) . chr(41) . ' *Any ' . chr(123) . ' ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1)))->emit_go(("" . chr(59) . ' return u_undef' . chr(40) . chr(41) . ' ') . chr(125) . chr(41) . chr(40) . chr(41))
+            ('(func () *Any ' . chr(123) . ' ' . (Perlito::Go::LexicalBlock->new(('block' => $self->{block}), ('needs_return' => 1)))->emit_go() . chr(59) . ' return u_undef() ' . chr(125) . ')()')
         }
     }
 
@@ -945,7 +945,7 @@ $self->{var}->emit_go()
         sub mod { $_[0]->{mod} };
         sub emit_go {
             my $self = $_[0];
-            chr(47) . chr(47) . ' use ' . $self->{mod} . chr(10)
+            (chr(47) . chr(47) . ' use ' . $self->{mod} . (chr(10)))
         }
     }
 

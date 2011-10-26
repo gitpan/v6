@@ -23,8 +23,8 @@ package GLOBAL;
         sub capture { $_[0]->{capture} };
         sub scalar {
             my $self = $_[0];
-            if (Main::bool($self->{bool})) {
-                if (Main::bool(defined($self->{capture}))) {
+            if ($self->{bool}) {
+                if (defined($self->{capture})) {
                     return scalar ($self->{capture})
                 };
                 return scalar (substr($self->{str}, $self->{from}, (($self->{to} - $self->{from}))))
@@ -35,8 +35,8 @@ package GLOBAL;
         };
         sub string {
             my $self = $_[0];
-            if (Main::bool($self->{bool})) {
-                if (Main::bool(defined($self->{capture}))) {
+            if ($self->{bool}) {
+                if (defined($self->{capture})) {
                     return scalar ($self->{capture})
                 };
                 return scalar (substr($self->{str}, $self->{from}, (($self->{to} - $self->{from}))))
@@ -55,7 +55,7 @@ package GLOBAL;
         sub value { $_[0]->{value} };
         sub perl {
             my $self = $_[0];
-            return scalar ($self->{key} . ' ' . chr(61) . chr(62) . ' ' . Main::perl($self->{value}, ))
+            return scalar (($self->{key} . ' ' . chr(61) . '> ' . Main::perl($self->{value}, )))
         }
     }
 
@@ -65,12 +65,12 @@ package GLOBAL;
         sub new { shift; bless { @_ }, "Main" }
         sub to_lisp_identifier {
             my $ident = $_[0];
-            return scalar ('sv-' . $ident)
+            return scalar (('sv-' . $ident))
         };
         sub lisp_dump_object {
             my $class_name = $_[0];
             my $data = $_[1];
-            return scalar ($class_name . chr(40) . ' ' . Main::join(([ map { Main::perl( $_, , ) } @{( $data )} ]), ', ') . ' ' . chr(41))
+            return scalar (($class_name . '( ' . Main::join((bless [ map { Main::perl( $_, , ) } @{( $data )} ], "ARRAY"), ', ') . ' )'))
         }
     }
 

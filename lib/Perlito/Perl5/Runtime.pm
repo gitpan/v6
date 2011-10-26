@@ -44,14 +44,15 @@ $_ = Encode::decode('utf-8', $_)
     }
     
     sub keys   { 
-        CORE::keys %{$_[0]};
+        bless [ CORE::keys %{$_[0]} ], 'ARRAY';
     }
     sub values { 
-        CORE::values %{$_[0]};
+        bless [ CORE::values %{$_[0]} ], 'ARRAY';
     }
     sub pairs {
-        map Pair->new( key => $_, value => $_[0]{$_} ),
+        bless [ map Pair->new( key => $_, value => $_[0]{$_} ),
             CORE::keys %{$_[0]}
+        ], 'ARRAY';
     }
     
     sub flat {
@@ -77,36 +78,35 @@ $_ = Encode::decode('utf-8', $_)
 
 package Perlito::Grammar;
     sub space { 
-        my $grammar = $_[0]; my $str = $_[1]; my $pos = $_[2]; 
-        my $MATCH; 
-        $MATCH = Perlito::Match->new( 
-            str => $str,from => $pos,to => $pos, ); 
+        # my $grammar = $_[0]; 
+        my $str = $_[1]; my $pos = $_[2]; 
+        my $MATCH = bless { str => $str, from => $pos, to => $pos }, 'Perlito::Match';
         $MATCH->{bool} = (
-            substr($str, $MATCH->to()) =~ m/^([[:space:]])/
-            ? ( 1 + ($MATCH->{to} = ( length( $1 ) + $MATCH->to() )))
+            substr($str, $MATCH->{to}) =~ m/^([[:space:]])/
+            ? ( 1 + ($MATCH->{to} = ( length( $1 ) + $MATCH->{to} )))
             : 0
         );
         $MATCH;
     }
     sub digit { 
-        my $grammar = $_[0]; my $str = $_[1]; my $pos = $_[2]; 
-        my $MATCH; $MATCH = Perlito::Match->new( 
-            str => $str,from => $pos,to => $pos, ); 
+        # my $grammar = $_[0]; 
+        my $str = $_[1]; my $pos = $_[2]; 
+        my $MATCH = bless { str => $str, from => $pos, to => $pos }, 'Perlito::Match';
         $MATCH->{bool} = (
-            substr($str, $MATCH->to()) =~ m/^([[:digit:]])/
-            ? ( 1 + ($MATCH->{to} = ( length( $1 ) + $MATCH->to() )))
+            substr($str, $MATCH->{to}) =~ m/^([[:digit:]])/
+            ? ( 1 + ($MATCH->{to} = ( length( $1 ) + $MATCH->{to} )))
             : 0
         );
         $MATCH;
     }
 
     sub word { 
-        my $grammar = $_[0]; my $str = $_[1]; my $pos = $_[2]; 
-        my $MATCH; $MATCH = Perlito::Match->new( 
-            str => $str,from => $pos,to => $pos, ); 
+        # my $grammar = $_[0]; 
+        my $str = $_[1]; my $pos = $_[2]; 
+        my $MATCH = bless { str => $str, from => $pos, to => $pos }, 'Perlito::Match';
         $MATCH->{bool} = (
-            substr($str, $MATCH->to()) =~ m/^([[:word:]])/
-            ? ( 1 + ($MATCH->{to} = ( length( $1 ) + $MATCH->to() )))
+            substr($str, $MATCH->{to}) =~ m/^([[:word:]])/
+            ? ( 1 + ($MATCH->{to} = ( length( $1 ) + $MATCH->{to} )))
             : 0
         );
         $MATCH;
@@ -124,14 +124,53 @@ package IO;
         return Encode::decode( 'utf-8', $source );
     }
 
+package ARRAY;
+
+    use overload (
+        bool     => sub { scalar(@{$_[0]}) },
+        '""'     => \&Str,
+    );
+
+    sub map  { bless [ CORE::map(  $_[1]($_), @{$_[0]} ) ], 'ARRAY' }
+    sub grep { bless [ CORE::grep( $_[1]($_), @{$_[0]} ) ], 'ARRAY' }
+    sub sort { 
+          $_[1] 
+        ? bless [ CORE::sort( $_[1]($_), @{$_[0]} ) ], 'ARRAY' 
+        : bless [ CORE::sort( @{$_[0]} ) ], 'ARRAY' 
+    }
+
+    sub Str {
+        join( " ", CORE::map { Main::Str($_) } @{$_[0]} )
+    }
+
+package HASH;
+
+    use overload (
+        bool     => sub { scalar(CORE::keys %{$_[0]}) },
+        '""'     => \&Str,
+    );
+
+    sub Str {
+        join( "\n", map { $_ . "\t" . Main::Str($_[0]{$_}) } CORE::keys %{$_[0]} )
+    }
+
 package Main;
+
+    sub map  { bless [ CORE::map(  $_[0]($_), @{$_[1]} ) ], 'ARRAY' }
+    sub grep { bless [ CORE::grep( $_[0]($_), @{$_[1]} ) ], 'ARRAY' }
+    sub sort { 
+          $_[1]
+        ? bless [ CORE::sort( $_[0]($_), @{$_[1]} ) ], 'ARRAY' 
+        : bless [ CORE::sort( @{$_[0]} ) ], 'ARRAY'
+    }
 
     sub True { 1 }
     sub Str {
-        local $_;
+        my $can = UNIVERSAL::can($o => 'Str');
+        return $can->($o) if $can;
         if ( ref($_[0]) ) {
-            return join( " ", map { Str($_) } @{$_[0]} ) if ref($_[0]) eq 'ARRAY';
-            return join( "\n", map { $_ . "\t" . Str($_[0]{$_}) } keys %{$_[0]} ) if ref($_[0]) eq 'HASH';
+            return ARRAY::Str($_[0]) if ref($_[0]) eq 'ARRAY';
+            return HASH::Str($_[0])  if ref($_[0]) eq 'HASH';
         }
         return $_[0];
     }
@@ -165,11 +204,18 @@ package Main;
            )
     }
 
+    sub keys   { 
+        bless [ CORE::keys %{$_[0]} ], 'ARRAY';
+    }
+    sub values { 
+        bless [ CORE::values %{$_[0]} ], 'ARRAY';
+    }
+ 
     sub pairs {
-        [
+        bless [
             map Pair->new( key => $_, value => $_[0]{$_} ),
                 CORE::keys %{$_[0]}
-        ]
+        ], 'ARRAY';
     }
  
     sub id {
@@ -188,7 +234,7 @@ package Main;
             $Main::_seen{$key}++;
             return '[' . join( ", ", map { perl($_) } @$o ) . ']' 
                 if ref($o) eq 'ARRAY';
-            return '{' . join( ", ", map { perl($_) . ' => ' . perl($o->{$_}) } sort {$a cmp $b} keys(%$o) ) . '}' 
+            return '{' . join( ", ", map { perl($_) . ' => ' . perl($o->{$_}) } sort {$a cmp $b} CORE::keys(%$o) ) . '}' 
                 if ref($o) eq 'HASH';
             return 'sub { ... }'
                 if ref($o) eq 'CODE';
@@ -242,10 +288,7 @@ package Main;
     }
 
     sub bool { 
-        my $ref = ref($_[0]);
-        return scalar(@{$_[0]}) if $ref eq 'ARRAY';
-        return scalar(keys %{$_[0]}) if $ref eq 'HASH';
-        return $_[0] ? 1 : 0;
+        $_[0] ? 1 : 0
     }
 
     # Lisp emitter

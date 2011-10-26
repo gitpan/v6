@@ -21,21 +21,21 @@ package GLOBAL;
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ((my  $env1 = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $env1) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     $Hash_a
 } );
-    ($List_v = ($env || []));
-    for my $x ( @{[0 .. ((scalar( @{$List_v} ) - 1))] || []} ) {
+    ($List_v = ($env));
+    for my $x ( @{(bless [0 .. ((scalar( @{$List_v} ) - 1))], 'ARRAY')} ) {
         push( @{$List_a}, $List_v->[$x] )
     };
     $List_a
 });
-            for my $stmt ( @{$self->{body} || []} ) {
-$stmt->eval($env1)
+            for my $stmt ( @{$self->{body}} ) {
+                $stmt->eval($env1)
             }
         }
     }
@@ -48,7 +48,7 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            (0+$self->{int})
+            0+($self->{int})
         }
     }
 
@@ -72,7 +72,7 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            (0+$self->{num})
+            0+($self->{num})
         }
     }
 
@@ -97,21 +97,21 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ((my  $env1 = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $env1) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     $Hash_a
 } );
-    ($List_v = ($env || []));
-    for my $x ( @{[0 .. ((scalar( @{$List_v} ) - 1))] || []} ) {
+    ($List_v = ($env));
+    for my $x ( @{(bless [0 .. ((scalar( @{$List_v} ) - 1))], 'ARRAY')} ) {
         push( @{$List_a}, $List_v->[$x] )
     };
     $List_a
 });
-            for my $stmt ( @{$self->{stmts} || []} ) {
-$stmt->eval($env1)
+            for my $stmt ( @{$self->{stmts}} ) {
+                $stmt->eval($env1)
             }
         }
     }
@@ -124,8 +124,8 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            (my  $List_a = []);
-            for my $v ( @{$self->{array1} || []} ) {
+            (my  $List_a = bless [], 'ARRAY');
+            for my $v ( @{$self->{array1}} ) {
                 push( @{$List_a}, $v->eval($env) )
             };
             return scalar ($List_a)
@@ -140,9 +140,9 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            (my  $Hash_h = {});
-            for my $field ( @{$self->{hash1} || []} ) {
-                ((my  $pair = undef) = $field->arguments());
+            (my  $Hash_h = bless {}, 'HASH');
+            for my $field ( @{$self->{hash1}} ) {
+                ((my  $pair) = $field->arguments());
                 ($Hash_h->{($pair->[0])->eval($env)} = ($pair->[1])->eval($env))
             };
             return scalar ($Hash_h)
@@ -186,37 +186,37 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ((my  $ns = undef) = '');
-            if (Main::bool($self->{namespace})) {
-                ($ns = $self->{namespace} . '::')
+            ((my  $ns) = '');
+            if ($self->{namespace}) {
+                ($ns = ($self->{namespace} . '::'))
             }
             else {
-                if (Main::bool((((($self->{sigil} eq chr(64))) && (($self->{twigil} eq '*'))) && (($self->{name} eq 'ARGS'))))) {
+                if ((((($self->{sigil} eq chr(64))) && (($self->{twigil} eq '*'))) && (($self->{name} eq 'ARGS')))) {
                     return scalar ((\@ARGV))
                 };
-                if (Main::bool(($self->{twigil} eq '.'))) {
-                    warn('Interpreter TODO: ' . chr(36) . '.' . $self->{name});
-                    return scalar (chr(36) . 'self-' . chr(62) . chr(123) . $self->{name} . chr(125))
+                if (($self->{twigil} eq '.')) {
+                    warn(('Interpreter TODO: ' . chr(36) . '.' . $self->{name}));
+                    return scalar ((chr(36) . 'self->' . chr(123) . $self->{name} . chr(125)))
                 };
-                if (Main::bool(($self->{name} eq chr(47)))) {
+                if (($self->{name} eq chr(47))) {
                     warn('Interpreter TODO: ' . chr(36) . chr(47));
-                    return scalar ($self->{sigil} . 'MATCH')
+                    return scalar (($self->{sigil} . 'MATCH'))
                 }
             };
-            ((my  $name = undef) = $self->{sigil} . $ns . $self->{name});
-            for my $e ( @{(($env) || []) || []} ) {
-                if (Main::bool(exists($e->{$name}))) {
+            ((my  $name) = ($self->{sigil} . $ns . $self->{name}));
+            for my $e ( @{(($env))} ) {
+                if (exists($e->{$name})) {
                     return scalar ($e->{$name})
                 }
             };
-            warn('Interpreter runtime error: variable ' . chr(39), $name, chr(39) . ' not found')
+            warn(('Interpreter runtime error: variable ' . chr(39)), $name, (chr(39) . ' not found'))
         };
         sub plain_name {
             my $self = $_[0];
-            if (Main::bool($self->{namespace})) {
-                return scalar ($self->{sigil} . $self->{namespace} . '::' . $self->{name})
+            if ($self->{namespace}) {
+                return scalar (($self->{sigil} . $self->{namespace} . '::' . $self->{name}))
             };
-            return scalar ($self->{sigil} . $self->{name})
+            return scalar (($self->{sigil} . $self->{name}))
         }
     }
 
@@ -228,7 +228,7 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ("" . $self->{name})
+            "".($self->{name})
         }
     }
 
@@ -243,18 +243,15 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            warn('Interpreter TODO: Call');
-            ((my  $invocant = undef) = $self->{invocant}->eval($env));
-            if (Main::bool(($invocant eq 'self'))) {
+            warn(('Interpreter TODO: Call'));
+            ((my  $invocant) = $self->{invocant}->eval($env));
+            if (($invocant eq 'self')) {
                 ($invocant = chr(36) . 'self')
             };
-            if (Main::bool(($self->{hyper}))) {
-
-            }
-            else {
+            if (($self->{hyper})) {
 
             };
-            warn('Interpreter runtime error: method ' . chr(39), $self->{method}, chr(40) . chr(41) . chr(39) . ' not found')
+            warn(('Interpreter runtime error: method ' . chr(39)), $self->{method}, ('()' . chr(39) . ' not found'))
         }
     }
 
@@ -268,17 +265,17 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ((my  $ns = undef) = '');
-            if (Main::bool($self->{namespace})) {
-                ($ns = $self->{namespace} . '::')
+            ((my  $ns) = '');
+            if ($self->{namespace}) {
+                ($ns = ($self->{namespace} . '::'))
             };
-            ((my  $code = undef) = $ns . $self->{code});
-            for my $e ( @{(($env) || []) || []} ) {
-                if (Main::bool(exists($e->{$code}))) {
+            ((my  $code) = ($ns . $self->{code}));
+            for my $e ( @{(($env))} ) {
+                if (exists($e->{$code})) {
                     return scalar ((($e->{$code})->($env, $self->{arguments})))
                 }
             };
-            warn('Interpreter runtime error: subroutine ' . chr(39), $code, chr(40) . chr(41) . chr(39) . ' not found')
+            warn(('Interpreter runtime error: subroutine ' . chr(39)), $code, ('()' . chr(39) . ' not found'))
         }
     }
 
@@ -292,44 +289,44 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ((my  $cond = undef) = $self->{cond});
-            if (Main::bool($cond->eval($env))) {
-                ((my  $env1 = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $cond) = $self->{cond});
+            if ($cond->eval($env)) {
+                ((my  $env1) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     $Hash_a
 } );
-    ($List_v = ($env || []));
-    for my $x ( @{[0 .. ((scalar( @{$List_v} ) - 1))] || []} ) {
+    ($List_v = ($env));
+    for my $x ( @{(bless [0 .. ((scalar( @{$List_v} ) - 1))], 'ARRAY')} ) {
         push( @{$List_a}, $List_v->[$x] )
     };
     $List_a
 });
-                for my $stmt ( @{((($self->{body})->stmts()) || []) || []} ) {
-$stmt->eval($env1)
+                for my $stmt ( @{((($self->{body})->stmts()))} ) {
+                    $stmt->eval($env1)
                 }
             }
             else {
-                ((my  $env1 = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+                ((my  $env1) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     $Hash_a
 } );
-    ($List_v = ($env || []));
-    for my $x ( @{[0 .. ((scalar( @{$List_v} ) - 1))] || []} ) {
+    ($List_v = ($env));
+    for my $x ( @{(bless [0 .. ((scalar( @{$List_v} ) - 1))], 'ARRAY')} ) {
         push( @{$List_a}, $List_v->[$x] )
     };
     $List_a
 });
-                for my $stmt ( @{((($self->{otherwise})->stmts()) || []) || []} ) {
-$stmt->eval($env1)
+                for my $stmt ( @{((($self->{otherwise})->stmts()))} ) {
+                    $stmt->eval($env1)
                 }
             };
-            return scalar (undef)
+            return scalar (undef())
         }
     }
 
@@ -343,32 +340,32 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ((my  $cond = undef) = $self->{cond});
-            ((my  $topic_name = undef) = (($self->{body})->sig())->plain_name());
-            ((my  $env1 = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $cond) = $self->{cond});
+            ((my  $topic_name) = (($self->{body})->sig())->plain_name());
+            ((my  $env1) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     $Hash_a
 } );
-    ($List_v = ($env || []));
-    for my $x ( @{[0 .. ((scalar( @{$List_v} ) - 1))] || []} ) {
+    ($List_v = ($env));
+    for my $x ( @{(bless [0 .. ((scalar( @{$List_v} ) - 1))], 'ARRAY')} ) {
         push( @{$List_a}, $List_v->[$x] )
     };
     $List_a
 });
-            for my $topic ( @{(($cond->eval($env)) || []) || []} ) {
+            for my $topic ( @{(($cond->eval($env)))} ) {
                 ($env1->[0] = do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     ($Hash_a->{$topic_name} = $topic);
     $Hash_a
 });
-                for my $stmt ( @{((($self->{body})->stmts()) || []) || []} ) {
-$stmt->eval($env1)
+                for my $stmt ( @{((($self->{body})->stmts()))} ) {
+                    $stmt->eval($env1)
                 }
             };
-            return scalar (undef)
+            return scalar (undef())
         }
     }
 
@@ -381,7 +378,7 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            die('TODO - When')
+            die(('TODO - When'))
         }
     }
 
@@ -396,7 +393,7 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            die('TODO - While')
+            die(('TODO - While'))
         }
     }
 
@@ -410,19 +407,19 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ((my  $decl = undef) = $self->{decl});
-            ((my  $name = undef) = $self->{var}->plain_name());
-            if (Main::bool(($decl eq 'has'))) {
-                warn('Interpreter TODO: has')
+            ((my  $decl) = $self->{decl});
+            ((my  $name) = $self->{var}->plain_name());
+            if (($decl eq 'has')) {
+                warn(('Interpreter TODO: has'))
             };
-            if (Main::bool(!Main::bool((exists(($env->[0])->{$name}))))) {
-                (($env->[0])->{$name} = undef)
+            if (!((exists(($env->[0])->{$name})))) {
+                (($env->[0])->{$name} = undef())
             };
-            return scalar (undef)
+            return scalar (undef())
         };
         sub plain_name {
             my $self = $_[0];
-$self->{var}->plain_name()
+            $self->{var}->plain_name()
         }
     }
 
@@ -436,7 +433,7 @@ $self->{var}->plain_name()
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            warn('Interpreter TODO: Sig')
+            warn(('Interpreter TODO: Sig'))
         }
     }
 
@@ -450,11 +447,11 @@ $self->{var}->plain_name()
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            warn('Interpreter TODO: Method');
-            ((my  $sig = undef) = $self->{sig});
-            ((my  $invocant = undef) = $sig->invocant());
-            ((my  $pos = undef) = $sig->positional());
-            ((my  $str = undef) = 'my ' . chr(36) . 'List__ ' . chr(61) . ' ' . chr(92) . chr(64) . '_' . chr(59) . ' ')
+            warn(('Interpreter TODO: Method'));
+            ((my  $sig) = $self->{sig});
+            ((my  $invocant) = $sig->invocant());
+            ((my  $pos) = $sig->positional());
+            ((my  $str) = 'my ' . chr(36) . 'List__ ' . chr(61) . ' ' . chr(92) . chr(64) . '_' . chr(59) . ' ')
         }
     }
 
@@ -468,37 +465,37 @@ $self->{var}->plain_name()
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            (my  $List_param_name = []);
-            for my $field ( @{(($self->{sig}->positional()) || []) || []} ) {
+            (my  $List_param_name = bless [], 'ARRAY');
+            for my $field ( @{(($self->{sig}->positional()))} ) {
                 push( @{$List_param_name}, $field->plain_name() )
             };
-            ((my  $sub = undef) = sub  {
+            ((my  $sub) = sub  {
     my $env = $_[0];
     my $args = $_[1];
-    (my  $Hash_context = {});
-    ((my  $n = undef) = 0);
+    (my  $Hash_context = bless {}, 'HASH');
+    ((my  $n) = 0);
     ($Hash_context->{chr(64) . '_'} = $args);
-    for my $name ( @{$List_param_name || []} ) {
+    for my $name ( @{$List_param_name} ) {
         ($Hash_context->{$name} = ($args->[$n])->eval($env));
         ($n = ($n + 1))
     };
-    ((my  $env1 = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+    ((my  $env1) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, $Hash_context );
-    ($List_v = ($env || []));
-    for my $x ( @{[0 .. ((scalar( @{$List_v} ) - 1))] || []} ) {
+    ($List_v = ($env));
+    for my $x ( @{(bless [0 .. ((scalar( @{$List_v} ) - 1))], 'ARRAY')} ) {
         push( @{$List_a}, $List_v->[$x] )
     };
     $List_a
 });
-    (my  $r = undef);
-    for my $stmt ( @{$self->{block} || []} ) {
+    (my  $r);
+    for my $stmt ( @{$self->{block}} ) {
         ($r = $stmt->eval($env1))
     };
     return scalar ($r)
 });
-            if (Main::bool($self->{name})) {
+            if ($self->{name}) {
                 (($env->[0])->{$self->{name}} = $sub)
             };
             return scalar ($sub)
@@ -513,21 +510,21 @@ $self->{var}->plain_name()
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            ((my  $env1 = undef) = do {
-    (my  $List_a = []);
-    (my  $List_v = []);
+            ((my  $env1) = do {
+    (my  $List_a = bless [], 'ARRAY');
+    (my  $List_v = bless [], 'ARRAY');
     push( @{$List_a}, do {
-    (my  $Hash_a = {});
+    (my  $Hash_a = bless {}, 'HASH');
     $Hash_a
 } );
-    ($List_v = ($env || []));
-    for my $x ( @{[0 .. ((scalar( @{$List_v} ) - 1))] || []} ) {
+    ($List_v = ($env));
+    for my $x ( @{(bless [0 .. ((scalar( @{$List_v} ) - 1))], 'ARRAY')} ) {
         push( @{$List_a}, $List_v->[$x] )
     };
     $List_a
 });
-            for my $stmt ( @{$self->{block} || []} ) {
-$stmt->eval($env1)
+            for my $stmt ( @{$self->{block}} ) {
+                $stmt->eval($env1)
             }
         }
     }
@@ -540,8 +537,8 @@ $stmt->eval($env1)
         sub eval {
             my $self = $_[0];
             my $env = $_[1];
-            warn('Interpreter TODO: Use');
-            'use ' . $self->{mod}
+            warn(('Interpreter TODO: Use'));
+            ('use ' . $self->{mod})
         }
     }
 
