@@ -69,3 +69,4 @@ t/17-hash-autovivify.t
 t/18-array-autovivify.t
 t/21-test.t
 
+META.json                                Module JSON meta-data (added by MakeMaker)
