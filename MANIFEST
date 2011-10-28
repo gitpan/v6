@@ -1,5 +1,4 @@
 ChangeLog
-hello_world.pl
 lib/Perlito/Clojure/Emitter.pm
 lib/Perlito/Emitter/Token.pm
 lib/Perlito/Eval.pm
@@ -69,4 +68,3 @@ t/17-hash-autovivify.t
 t/18-array-autovivify.t
 t/21-test.t
 
-META.json                                Module JSON meta-data (added by MakeMaker)
